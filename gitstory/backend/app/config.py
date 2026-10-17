@@ -28,6 +28,17 @@ class Config:
         if origin.strip()
     ]
 
+    # ── Server ──────────────────────────────────────────────────────────────
+    PORT: int = int(os.environ.get("PORT", "5000"))
+    DEBUG: bool = os.environ.get("FLASK_DEBUG", "1").lower() in ("1", "true")
+
+    # ── AI Service (Gemini API - reserved for Phase 2) ──────────────────────
+    GEMINI_API_KEY: str | None = os.environ.get("GEMINI_API_KEY") or None
+
+    # ── Database (Future PostgreSQL integration) ───────────────────────────
+    # In Phase 1 no database is connected. Configured for future SQLALCHEMY_DATABASE_URI.
+    SQLALCHEMY_DATABASE_URI: str | None = os.environ.get("DATABASE_URL") or None
+
     # ── Caching (future use) ─────────────────────────────────────────────────
     CACHE_TTL_SECONDS: int = int(os.environ.get("CACHE_TTL_SECONDS", "300"))
 

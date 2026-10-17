@@ -106,6 +106,7 @@ Stack traces are never exposed to clients.
 | `backend/app/routes/health.py` | `GET /api/health` |
 | `backend/app/routes/repositories.py` | Repository endpoints |
 | `backend/app/services/github_service.py` | GitHub REST API calls |
+| `backend/app/services/ai_service.py` | Gemini API service wrapper (Phase 2) |
 | `backend/app/utils/validators.py` | URL and identifier validation |
 | `backend/app/utils/errors.py` | Exception types and response helpers |
 | `frontend/assets/js/config.js` | API base URL configuration |
@@ -126,6 +127,13 @@ Stack traces are never exposed to clients.
 3. Add `apiCommits(owner, repo)` to `api.js`.
 4. Implement the frontend rendering in `repository.js`.
 5. Wire up the chart in `charts.js` using `renderCommitActivityChart()`.
+
+### Adding Gemini AI Narrative Generation (Phase 2)
+
+1. Set `GEMINI_API_KEY` in `backend/.env`.
+2. Implement narrative summarization inside `backend/app/services/ai_service.py` using Google GenAI SDK.
+3. Expose route `GET /api/repositories/<owner>/<repo>/ai-story` in `repositories.py`.
+4. Render the generated AI narrative and commit intelligence card on `pages/repository.html`.
 
 ### Adding PostgreSQL
 
