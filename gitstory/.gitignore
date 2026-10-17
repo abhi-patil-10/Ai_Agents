@@ -1,0 +1,46 @@
+# GitStory — Root .gitignore
+
+# ── Secrets ────────────────────────────────────────────────────────────────────
+.env
+*.env
+!**/.env.example
+
+# ── Python virtual environments ────────────────────────────────────────────────
+.venv/
+venv/
+env/
+ENV/
+
+# ── Python bytecode and cache ──────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+
+# ── Pytest and coverage ────────────────────────────────────────────────────────
+.pytest_cache/
+.coverage
+coverage.xml
+htmlcov/
+*.junit.xml
+
+# ── IDE and OS ─────────────────────────────────────────────────────────────────
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ── Node (if a JS toolchain is added later) ────────────────────────────────────
+node_modules/
+.npm/
+dist/
+build/
+
+# ── Logs and temp ─────────────────────────────────────────────────────────────
+*.log
+*.tmp
+*.bak

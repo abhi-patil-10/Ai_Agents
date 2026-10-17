@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Repository Dashboard — GitStory</title>
+  <meta name="description" content="Explore GitHub repository analytics: commit history, contributors, languages, and frequently changed files." />
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/svg+xml" href="../favicon.svg" />
+
+  <!-- Stylesheets -->
+  <link rel="stylesheet" href="../assets/css/style.css" />
+  <link rel="stylesheet" href="../assets/css/dashboard.css" />
+  <link rel="stylesheet" href="../assets/css/responsive.css" />
+
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js" defer></script>
+
+  <style>
+    /* ── Loading skeleton layout ──────────────────────────────────────── */
+    .skeleton-row {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .skeleton-avatar {
+      width: 56px;
+      height: 56px;
+      border-radius: 12px;
+      flex-shrink: 0;
+    }
+
+    .skeleton-lines { flex: 1; display: flex; flex-direction: column; gap: 8px; padding-top: 4px; }
+
+    /* Loading / error overlay panels */
+    .state-panel {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 80px 24px;
+      text-align: center;
+      gap: 16px;
+    }
+
+    .state-panel-icon { font-size: 3rem; opacity: 0.5; }
+
+    .state-panel-title {
+      font-size: var(--text-xl);
+      font-weight: var(--fw-semibold);
+      color: var(--color-text-primary);
+    }
+
+    .state-panel-desc {
+      font-size: var(--text-sm);
+      color: var(--color-text-secondary);
+      max-width: 400px;
+      line-height: var(--lh-relaxed);
+    }
+
+    /* Section heading within panels */
+    .panel-section-title {
+      font-size: var(--text-sm);
+      font-weight: var(--fw-semibold);
+      color: var(--color-text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: var(--space-4);
+    }
+
+    /* ── Commit item hover ─────────────────────────────────────────────── */
+    .commit-item:hover {
+      background: var(--color-bg-elevated) !important;
+      border-radius: 6px;
+    }
+
+    /* ── Contributor item hover ─────────────────────────────────────────── */
+    .contributor-item:hover {
+      background: var(--color-bg-elevated) !important;
+      border-radius: 6px;
+    }
+
+    /* ── Hot file item hover ─────────────────────────────────────────── */
+    .hot-file-item:hover {
+      background: var(--color-bg-elevated) !important;
+      border-radius: 6px;
+    }
+
+    /* ── Scrollbar styling ──────────────────────────────────────────── */
+    .commits-timeline::-webkit-scrollbar {
+      width: 6px;
+    }
+    .commits-timeline::-webkit-scrollbar-track {
+      background: var(--color-bg-surface);
+      border-radius: 3px;
+    }
+    .commits-timeline::-webkit-scrollbar-thumb {
+      background: var(--color-bg-overlay);
+      border-radius: 3px;
+    }
+    .commits-timeline::-webkit-scrollbar-thumb:hover {
+      background: var(--color-text-muted);
+    }
+
+    /* ── Analytics loading indicators ───────────────────────────────── */
+    .analytics-loading {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 40px 24px;
+      color: var(--color-text-muted);
+      font-size: var(--text-sm);
+    }
+
+    /* ── Card loading pulse ─────────────────────────────────────────── */
+    @keyframes card-shimmer {
+      0% { opacity: 1; }
+      50% { opacity: 0.6; }
+      100% { opacity: 1; }
+    }
+
+    .card-loading {
+      animation: card-shimmer 1.5s ease-in-out infinite;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="app-shell">
+
+    <!-- ── Sidebar ─────────────────────────────────────────────────────── -->
+    <aside class="sidebar" aria-label="Repository sections">
+      <div class="sidebar-header">
+        <a href="../index.html" class="navbar-brand" aria-label="Back to GitStory home">
+          <div class="brand-mark" aria-hidden="true">G</div>
+          <span class="brand-name">Git<span>Story</span></span>
+        </a>
+      </div>
+
+      <nav class="sidebar-nav" aria-label="Dashboard sections">
+        <p class="sidebar-nav-label">Repository</p>
+
+        <a href="#overview" class="sidebar-link active" id="sidebar-overview-link" aria-current="true">
+          <svg class="link-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+          Overview
+        </a>
+
+        <a href="#commit-activity" class="sidebar-link">
+          <svg class="link-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+          Commit Activity
+        </a>
+
+        <a href="#contributors" class="sidebar-link">
+          <svg class="link-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          Contributors
+        </a>
+
+        <a href="#languages" class="sidebar-link">
+          <svg class="link-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+          Languages
+        </a>
+
+        <a href="#commits" class="sidebar-link">
+          <svg class="link-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="4"/><line x1="1.05" y1="12" x2="7" y2="12"/><line x1="17.01" y1="12" x2="22.96" y2="12"/></svg>
+          Recent Commits
+        </a>
+
+        <a href="#hot-files" class="sidebar-link">
+          <svg class="link-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+          Hot Files
+        </a>
+      </nav>
+    </aside>
+
+    <!-- ── Main content ───────────────────────────────────────────────── -->
+    <main class="main-content" id="main-content">
+
+      <!-- ── Loading state ─────────────────────────────────────────────── -->
+      <div id="loading-state" class="content-body" role="status" aria-live="polite" aria-label="Loading repository data">
+        <!-- Skeleton header -->
+        <div class="skeleton-row">
+          <div class="skeleton skeleton-avatar"></div>
+          <div class="skeleton-lines">
+            <div class="skeleton skeleton-text w-3-4" style="height:24px;"></div>
+            <div class="skeleton skeleton-text w-1-2"></div>
+            <div class="skeleton skeleton-text w-3-4"></div>
+          </div>
+        </div>
+
+        <!-- Skeleton stats row -->
+        <div class="stats-row" style="margin-top:32px;">
+          <div class="skeleton skeleton-block" style="height:90px; border-radius:12px;"></div>
+          <div class="skeleton skeleton-block" style="height:90px; border-radius:12px;"></div>
+          <div class="skeleton skeleton-block" style="height:90px; border-radius:12px;"></div>
+          <div class="skeleton skeleton-block" style="height:90px; border-radius:12px;"></div>
+        </div>
+
+        <!-- Skeleton grid -->
+        <div class="dashboard-grid" style="margin-top:24px;">
+          <div class="skeleton skeleton-block" style="height:220px; border-radius:12px; grid-column:span 2;"></div>
+          <div class="skeleton skeleton-block" style="height:180px; border-radius:12px;"></div>
+          <div class="skeleton skeleton-block" style="height:180px; border-radius:12px;"></div>
+        </div>
+
+        <div style="text-align:center;margin-top:32px;color:var(--color-text-muted);font-size:var(--text-sm);">
+          <span class="spinner spinner-lg" style="display:inline-block;margin-bottom:12px;"></span><br />
+          Fetching repository data from GitHub…
+        </div>
+      </div>
+
+      <!-- ── Error state ────────────────────────────────────────────────── -->
+      <div id="error-state" class="content-body hidden" role="alert">
+        <div class="state-panel">
+          <span class="state-panel-icon" aria-hidden="true">⚠️</span>
+          <h1 class="state-panel-title">Unable to load repository</h1>
+          <p class="state-panel-desc" id="error-message">Something went wrong while fetching the repository data.</p>
+          <div style="display:flex;gap:12px;margin-top:8px;">
+            <button class="btn btn-primary" onclick="location.reload()">Retry</button>
+            <a href="../index.html" class="btn btn-ghost">← Back to search</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Dashboard view ─────────────────────────────────────────────── -->
+      <div id="dashboard-view" class="hidden">
+
+        <!-- Repository header -->
+        <header class="content-header" id="overview">
+          <div class="repo-overview">
+            <div class="repo-avatar" aria-hidden="true">📦</div>
+            <div class="repo-meta">
+              <h1 class="repo-name" id="repo-name">—</h1>
+              <p class="repo-full-name" id="repo-full-name">—</p>
+              <p class="repo-description" id="repo-description">—</p>
+              <div class="repo-badges" id="repo-badges">
+                <span class="badge badge-accent hidden" id="badge-language"></span>
+                <span class="badge badge-neutral hidden" id="badge-branch"></span>
+                <span class="badge badge-neutral hidden" id="badge-license"></span>
+                <span id="badge-topics"></span>
+              </div>
+            </div>
+          </div>
+
+          <a
+            id="repo-url-link"
+            href="#"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="btn btn-ghost btn-sm"
+            aria-label="Open repository on GitHub"
+          >
+            View on GitHub ↗
+          </a>
+        </header>
+
+        <div class="content-body">
+
+          <!-- Stats row -->
+          <div class="stats-row" role="list" aria-label="Repository statistics">
+            <div class="stat-card" role="listitem">
+              <div class="stat-card-icon" aria-hidden="true">⭐</div>
+              <div class="stat-card-value" id="stat-stars">—</div>
+              <div class="stat-card-label">Stars</div>
+            </div>
+            <div class="stat-card" role="listitem">
+              <div class="stat-card-icon" aria-hidden="true">🍴</div>
+              <div class="stat-card-value" id="stat-forks">—</div>
+              <div class="stat-card-label">Forks</div>
+            </div>
+            <div class="stat-card" role="listitem">
+              <div class="stat-card-icon" aria-hidden="true">🐛</div>
+              <div class="stat-card-value" id="stat-issues">—</div>
+              <div class="stat-card-label">Open Issues</div>
+            </div>
+            <div class="stat-card" role="listitem">
+              <div class="stat-card-icon" aria-hidden="true">👁️</div>
+              <div class="stat-card-value" id="stat-watchers">—</div>
+              <div class="stat-card-label">Watchers</div>
+            </div>
+            <div class="stat-card" role="listitem">
+              <div class="stat-card-icon" aria-hidden="true">🕒</div>
+              <div class="stat-card-value" id="stat-updated">—</div>
+              <div class="stat-card-label">Last Updated</div>
+            </div>
+            <div class="stat-card" role="listitem">
+              <div class="stat-card-icon" aria-hidden="true">📅</div>
+              <div class="stat-card-value" id="stat-created">—</div>
+              <div class="stat-card-label">Created</div>
+            </div>
+          </div>
+
+          <!-- Dashboard grid -->
+          <div class="dashboard-grid" style="margin-top: 24px;">
+
+            <!-- Commit activity -->
+            <div class="card span-2" id="commit-activity">
+              <div class="card-header">
+                <h2 class="card-title"><span aria-hidden="true">📅</span> Commit Activity</h2>
+              </div>
+              <div class="analytics-loading card-loading">
+                <span class="spinner"></span> Loading commit activity…
+              </div>
+            </div>
+
+            <!-- Contributors -->
+            <div class="card" id="contributors">
+              <div class="card-header">
+                <h2 class="card-title"><span aria-hidden="true">👥</span> Contributors</h2>
+              </div>
+              <div class="analytics-loading card-loading">
+                <span class="spinner"></span> Loading contributors…
+              </div>
+            </div>
+
+            <!-- Language distribution -->
+            <div class="card" id="languages">
+              <div class="card-header">
+                <h2 class="card-title"><span aria-hidden="true">🌐</span> Languages</h2>
+              </div>
+              <div class="analytics-loading card-loading">
+                <span class="spinner"></span> Loading languages…
+              </div>
+            </div>
+
+            <!-- Recent commits -->
+            <div class="card" id="commits">
+              <div class="card-header">
+                <h2 class="card-title"><span aria-hidden="true">🔀</span> Recent Commits</h2>
+              </div>
+              <div class="analytics-loading card-loading">
+                <span class="spinner"></span> Loading commits…
+              </div>
+            </div>
+
+            <!-- Frequently changed files -->
+            <div class="card" id="hot-files">
+              <div class="card-header">
+                <h2 class="card-title"><span aria-hidden="true">🔥</span> Frequently Changed Files</h2>
+              </div>
+              <div class="analytics-loading card-loading">
+                <span class="spinner"></span> Loading hot files…
+              </div>
+            </div>
+
+          </div><!-- /.dashboard-grid -->
+        </div><!-- /.content-body -->
+      </div><!-- /#dashboard-view -->
+
+    </main>
+  </div><!-- /.app-shell -->
+
+  <!-- Scripts (load order: config → utils → api → charts → repository) -->
+  <script src="../assets/js/config.js"></script>
+  <script src="../assets/js/utils.js"></script>
+  <script src="../assets/js/api.js"></script>
+  <script src="../assets/js/charts.js"></script>
+  <script src="../assets/js/repository.js"></script>
+</body>
+</html>
