@@ -1,6 +1,8 @@
 # GitStory
 
-> Visual GitHub Repository Explorer — transforms public GitHub repositories into interactive
+> **"Every Repository Has a Story. Discover Yours."**
+> 
+> Visual AI-powered GitHub Repository Explorer — transforms public GitHub repositories into interactive
 > development analytics dashboards.
 
 [![Python](https://img.shields.io/badge/Python-3.11+-blue)](https://python.org)
@@ -69,7 +71,7 @@ gitstory/
 │   │   ├── config.py          # Environment configuration
 │   │   ├── extensions.py      # Flask extensions
 │   │   ├── routes/            # health.py · repositories.py
-│   │   ├── services/          # github_service.py
+│   │   ├── services/          # github_service.py · ai_service.py
 │   │   └── utils/             # validators.py · errors.py
 │   ├── tests/                 # test_health.py · test_validators.py
 │   ├── .env.example
@@ -169,12 +171,14 @@ npx serve -l 5500 .
 
 | Variable | Default | Description |
 |---|---|---|
+| `FLASK_DEBUG` | `1` | Enable interactive debugging mode (`1` = on, `0` = off) |
 | `FLASK_ENV` | `development` | `development` \| `production` \| `testing` |
 | `PORT` | `5000` | Port the Flask dev server listens on |
 | `GITHUB_TOKEN` | *(empty)* | Optional PAT — increases rate limit to 5 000 req/hour |
 | `FRONTEND_ORIGINS` | `http://localhost:5500,...` | Comma-separated list of allowed CORS origins |
-| `CACHE_TTL_SECONDS` | `300` | Future cache TTL (not yet used) |
-| `LOG_LEVEL` | `INFO` | Python logging level |
+| `GEMINI_API_KEY` | *(empty)* | Optional key for Gemini API (reserved for Phase 2) |
+| `CACHE_TTL_SECONDS` | `300` | Future cache TTL in seconds |
+| `LOG_LEVEL` | `INFO` | Python logging level (`DEBUG`, `INFO`, `WARNING`, `ERROR`) |
 
 ---
 

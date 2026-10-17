@@ -17,6 +17,8 @@ def health_check():
     """Return the application health status."""
     data = {
         "status": "ok",
+        "api_version": "1.0.0",
+        "version": "1.0.0",
         "timestamp": datetime.now(timezone.utc).isoformat(),
         "python_version": sys.version.split()[0],
         "platform": platform.system(),

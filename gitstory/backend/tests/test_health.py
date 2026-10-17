@@ -31,6 +31,7 @@ class TestHealthEndpoint:
         payload = client.get("/api/health").get_json()
         info = payload["data"]
         assert info["status"] == "ok"
+        assert "api_version" in info or "version" in info
         assert "timestamp" in info
         assert "python_version" in info
         assert "platform" in info
