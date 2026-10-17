@@ -95,3 +95,53 @@ async function apiValidateRepository(repoUrl) {
 async function apiFetchRepository(owner, repo) {
   return apiFetch(`/repositories/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}`);
 }
+
+/**
+ * Fetch language distribution for a repository.
+ * @param {string} owner
+ * @param {string} repo
+ * @returns {Promise<ApiResponse>}
+ */
+async function apiFetchLanguages(owner, repo) {
+  return apiFetch(`/repositories/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/languages`);
+}
+
+/**
+ * Fetch weekly commit activity for the last year.
+ * @param {string} owner
+ * @param {string} repo
+ * @returns {Promise<ApiResponse>}
+ */
+async function apiFetchCommitActivity(owner, repo) {
+  return apiFetch(`/repositories/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/commit-activity`);
+}
+
+/**
+ * Fetch top contributors for a repository.
+ * @param {string} owner
+ * @param {string} repo
+ * @returns {Promise<ApiResponse>}
+ */
+async function apiFetchContributors(owner, repo) {
+  return apiFetch(`/repositories/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/contributors`);
+}
+
+/**
+ * Fetch recent commits for a repository.
+ * @param {string} owner
+ * @param {string} repo
+ * @returns {Promise<ApiResponse>}
+ */
+async function apiFetchCommits(owner, repo) {
+  return apiFetch(`/repositories/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/commits`);
+}
+
+/**
+ * Fetch frequently changed files for a repository.
+ * @param {string} owner
+ * @param {string} repo
+ * @returns {Promise<ApiResponse>}
+ */
+async function apiFetchHotFiles(owner, repo) {
+  return apiFetch(`/repositories/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/hot-files`);
+}

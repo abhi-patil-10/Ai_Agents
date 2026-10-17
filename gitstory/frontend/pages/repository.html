@@ -14,7 +14,7 @@
   <link rel="stylesheet" href="../assets/css/dashboard.css" />
   <link rel="stylesheet" href="../assets/css/responsive.css" />
 
-  <!-- Chart.js (loaded but not yet used fully) -->
+  <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js" defer></script>
 
   <style>
@@ -69,6 +69,62 @@
       letter-spacing: 0.08em;
       margin-bottom: var(--space-4);
     }
+
+    /* ── Commit item hover ─────────────────────────────────────────────── */
+    .commit-item:hover {
+      background: var(--color-bg-elevated) !important;
+      border-radius: 6px;
+    }
+
+    /* ── Contributor item hover ─────────────────────────────────────────── */
+    .contributor-item:hover {
+      background: var(--color-bg-elevated) !important;
+      border-radius: 6px;
+    }
+
+    /* ── Hot file item hover ─────────────────────────────────────────── */
+    .hot-file-item:hover {
+      background: var(--color-bg-elevated) !important;
+      border-radius: 6px;
+    }
+
+    /* ── Scrollbar styling ──────────────────────────────────────────── */
+    .commits-timeline::-webkit-scrollbar {
+      width: 6px;
+    }
+    .commits-timeline::-webkit-scrollbar-track {
+      background: var(--color-bg-surface);
+      border-radius: 3px;
+    }
+    .commits-timeline::-webkit-scrollbar-thumb {
+      background: var(--color-bg-overlay);
+      border-radius: 3px;
+    }
+    .commits-timeline::-webkit-scrollbar-thumb:hover {
+      background: var(--color-text-muted);
+    }
+
+    /* ── Analytics loading indicators ───────────────────────────────── */
+    .analytics-loading {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 40px 24px;
+      color: var(--color-text-muted);
+      font-size: var(--text-sm);
+    }
+
+    /* ── Card loading pulse ─────────────────────────────────────────── */
+    @keyframes card-shimmer {
+      0% { opacity: 1; }
+      50% { opacity: 0.6; }
+      100% { opacity: 1; }
+    }
+
+    .card-loading {
+      animation: card-shimmer 1.5s ease-in-out infinite;
+    }
   </style>
 </head>
 
@@ -87,7 +143,7 @@
       <nav class="sidebar-nav" aria-label="Dashboard sections">
         <p class="sidebar-nav-label">Repository</p>
 
-        <a href="#overview"     class="sidebar-link active" id="sidebar-overview-link" aria-current="true">
+        <a href="#overview" class="sidebar-link active" id="sidebar-overview-link" aria-current="true">
           <svg class="link-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
           Overview
         </a>
@@ -95,31 +151,26 @@
         <a href="#commit-activity" class="sidebar-link">
           <svg class="link-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
           Commit Activity
-          <span class="coming-soon-badge" style="margin-left:auto">Soon</span>
         </a>
 
         <a href="#contributors" class="sidebar-link">
           <svg class="link-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
           Contributors
-          <span class="coming-soon-badge" style="margin-left:auto">Soon</span>
         </a>
 
         <a href="#languages" class="sidebar-link">
           <svg class="link-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
           Languages
-          <span class="coming-soon-badge" style="margin-left:auto">Soon</span>
         </a>
 
         <a href="#commits" class="sidebar-link">
           <svg class="link-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="4"/><line x1="1.05" y1="12" x2="7" y2="12"/><line x1="17.01" y1="12" x2="22.96" y2="12"/></svg>
           Recent Commits
-          <span class="coming-soon-badge" style="margin-left:auto">Soon</span>
         </a>
 
         <a href="#hot-files" class="sidebar-link">
           <svg class="link-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
           Hot Files
-          <span class="coming-soon-badge" style="margin-left:auto">Soon</span>
         </a>
       </nav>
     </aside>
@@ -244,72 +295,53 @@
           <!-- Dashboard grid -->
           <div class="dashboard-grid" style="margin-top: 24px;">
 
-            <!-- Commit activity — coming soon -->
+            <!-- Commit activity -->
             <div class="card span-2" id="commit-activity">
               <div class="card-header">
-                <h2 class="card-title">
-                  <span aria-hidden="true">📅</span> Commit Activity
-                </h2>
-                <span class="coming-soon-badge">Coming soon</span>
+                <h2 class="card-title"><span aria-hidden="true">📅</span> Commit Activity</h2>
               </div>
-              <div class="chart-placeholder">
-                Weekly commit frequency chart will appear here once the data pipeline is wired up.
+              <div class="analytics-loading card-loading">
+                <span class="spinner"></span> Loading commit activity…
               </div>
             </div>
 
-            <!-- Contributors — coming soon -->
+            <!-- Contributors -->
             <div class="card" id="contributors">
               <div class="card-header">
-                <h2 class="card-title">
-                  <span aria-hidden="true">👥</span> Contributors
-                </h2>
-                <span class="coming-soon-badge">Coming soon</span>
+                <h2 class="card-title"><span aria-hidden="true">👥</span> Contributors</h2>
               </div>
-              <div class="empty-state" style="min-height:160px;">
-                <span class="empty-state-icon" aria-hidden="true">👤</span>
-                <p class="empty-state-desc">Contributor analytics will be shown here.</p>
+              <div class="analytics-loading card-loading">
+                <span class="spinner"></span> Loading contributors…
               </div>
             </div>
 
-            <!-- Language distribution — coming soon -->
+            <!-- Language distribution -->
             <div class="card" id="languages">
               <div class="card-header">
-                <h2 class="card-title">
-                  <span aria-hidden="true">🌐</span> Languages
-                </h2>
-                <span class="coming-soon-badge">Coming soon</span>
+                <h2 class="card-title"><span aria-hidden="true">🌐</span> Languages</h2>
               </div>
-              <div class="empty-state" style="min-height:160px;">
-                <span class="empty-state-icon" aria-hidden="true">📊</span>
-                <p class="empty-state-desc">Language breakdown chart will be shown here.</p>
+              <div class="analytics-loading card-loading">
+                <span class="spinner"></span> Loading languages…
               </div>
             </div>
 
-            <!-- Recent commits — coming soon -->
+            <!-- Recent commits -->
             <div class="card" id="commits">
               <div class="card-header">
-                <h2 class="card-title">
-                  <span aria-hidden="true">🔀</span> Recent Commits
-                </h2>
-                <span class="coming-soon-badge">Coming soon</span>
+                <h2 class="card-title"><span aria-hidden="true">🔀</span> Recent Commits</h2>
               </div>
-              <div class="empty-state" style="min-height:160px;">
-                <span class="empty-state-icon" aria-hidden="true">📝</span>
-                <p class="empty-state-desc">The latest commits will be listed here.</p>
+              <div class="analytics-loading card-loading">
+                <span class="spinner"></span> Loading commits…
               </div>
             </div>
 
-            <!-- Frequently changed files — coming soon -->
+            <!-- Frequently changed files -->
             <div class="card" id="hot-files">
               <div class="card-header">
-                <h2 class="card-title">
-                  <span aria-hidden="true">🔥</span> Frequently Changed Files
-                </h2>
-                <span class="coming-soon-badge">Coming soon</span>
+                <h2 class="card-title"><span aria-hidden="true">🔥</span> Frequently Changed Files</h2>
               </div>
-              <div class="empty-state" style="min-height:160px;">
-                <span class="empty-state-icon" aria-hidden="true">📁</span>
-                <p class="empty-state-desc">Hot files analysis will be shown here.</p>
+              <div class="analytics-loading card-loading">
+                <span class="spinner"></span> Loading hot files…
               </div>
             </div>
 
