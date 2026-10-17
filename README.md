@@ -12,9 +12,9 @@ Transform GitHub repository data into an interactive story of commits, contribut
 [![React](https://img.shields.io/badge/Frontend-React-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://react.dev/)
 [![GitHub API](https://img.shields.io/badge/Data-GitHub_API-181717?style=for-the-badge&logo=github)](https://docs.github.com/en/rest)
 
-**🌐 Live Demo:** [Visit GitStory](DEPLOYED_URL)
+**🌐 Live Demo:** [Visit GitStory](aiagents-frontend.vercel.app)
 
-**🎥 Demo Video:** [Watch Demo](DEMO_VIDEO_URL)
+**🎥 Demo Video:** [Watch Demo](https://youtu.be/bYTPvtnYyiE?si=BpB33bIpq_nBEGwt)
 
 </div>
 
