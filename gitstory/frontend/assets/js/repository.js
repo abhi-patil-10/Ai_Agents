@@ -52,6 +52,7 @@
   let _commitsPage = 1;
   let _commitsLoading = false;
   let _commitsExhausted = false;
+  let _timeMachineInstance = null;
 
   // ── Initialise ────────────────────────────────────────────────────────────
 
@@ -197,11 +198,34 @@
       renderPanelError('hot-files', 'Could not load hot files data.');
     }
 
+    // ── Repository Time Machine ──────────────────────────────────
+    if (_allCommits && _allCommits.length > 0) {
+      initTimeMachineSection(_allCommits);
+    } else {
+      renderPanelError('time-machine', 'No commit history available for Time Machine.');
+    }
+
     // ── Summary & Insights (loaded after other panels) ────────────
     loadSummary();
 
     // ── Enable export buttons ─────────────────────────────────────
     enableExportButtons();
+  }
+
+  function initTimeMachineSection(commits) {
+    const tmCard = document.getElementById('time-machine');
+    if (!tmCard || !window.TimeMachine) return;
+
+    if (_timeMachineInstance) {
+      _timeMachineInstance.destroy();
+      _timeMachineInstance = null;
+    }
+
+    _timeMachineInstance = new window.TimeMachine.RepositoryTimeMachine(tmCard, {
+      owner,
+      repo,
+      commits: commits || [],
+    });
   }
 
   // ── Render helpers ──────────────────────────────────────────────────────
@@ -358,6 +382,9 @@
       if (result.data && result.data.length > 0) {
         _allCommits = _allCommits.concat(result.data);
         if (result.data.length < 20) _commitsExhausted = true;
+        if (_timeMachineInstance) {
+          _timeMachineInstance.setCommits(_allCommits);
+        }
       } else {
         _commitsExhausted = true;
       }

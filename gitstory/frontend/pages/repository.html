@@ -13,6 +13,7 @@
   <link rel="stylesheet" href="../assets/css/style.css" />
   <link rel="stylesheet" href="../assets/css/dashboard.css" />
   <link rel="stylesheet" href="../assets/css/responsive.css" />
+  <link rel="stylesheet" href="../assets/css/time-machine.css" />
 
   <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js" defer></script>
@@ -171,6 +172,11 @@
         <a href="#hot-files" class="sidebar-link">
           <svg class="link-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
           Hot Files
+        </a>
+
+        <a href="#time-machine" class="sidebar-link" id="sidebar-time-machine-link">
+          <svg class="link-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          Time Machine
         </a>
 
         <p class="sidebar-nav-label" style="margin-top:16px;">Insights</p>
@@ -357,6 +363,17 @@
               </div>
             </div>
 
+            <!-- Repository Time Machine -->
+            <div class="card span-2" id="time-machine">
+              <div class="card-header">
+                <h2 class="card-title"><span aria-hidden="true">⏰</span> Repository Time Machine</h2>
+                <span class="badge badge-accent">Interactive Timeline</span>
+              </div>
+              <div class="analytics-loading card-loading">
+                <span class="spinner"></span> Loading commit timeline…
+              </div>
+            </div>
+
             <!-- AI Summary & Insights -->
             <div class="card span-2" id="summary">
               <div class="card-header">
@@ -391,11 +408,12 @@
     </main>
   </div><!-- /.app-shell -->
 
-  <!-- Scripts (load order: config → utils → api → charts → repository) -->
+  <!-- Scripts (load order: config → utils → api → charts → time-machine → repository) -->
   <script src="../assets/js/config.js"></script>
   <script src="../assets/js/utils.js"></script>
   <script src="../assets/js/api.js"></script>
   <script src="../assets/js/charts.js"></script>
+  <script src="../assets/js/time-machine.js"></script>
   <script src="../assets/js/repository.js"></script>
 </body>
 </html>
