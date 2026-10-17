@@ -12,9 +12,9 @@ Transform GitHub repository data into an interactive story of commits, contribut
 [![React](https://img.shields.io/badge/Frontend-React-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://react.dev/)
 [![GitHub API](https://img.shields.io/badge/Data-GitHub_API-181717?style=for-the-badge&logo=github)](https://docs.github.com/en/rest)
 
-**🌐 Live Demo:** [Visit GitStory](YOUR_DEPLOYED_URL)
+**🌐 Live Demo:** [Visit GitStory](DEPLOYED_URL)
 
-**🎥 Demo Video:** [Watch Demo](YOUR_DEMO_VIDEO_URL)
+**🎥 Demo Video:** [Watch Demo](DEMO_VIDEO_URL)
 
 </div>
 
@@ -145,8 +145,6 @@ Python provides a straightforward way to communicate with external APIs, process
               │ Interactive Dashboard│
               └──────────────────────┘
 ```
-
-*Adjust this diagram if your actual implementation uses a different architecture.*
 
 ## ⚙️ How It Works
 
@@ -279,16 +277,14 @@ Before deployment, verify that:
 
 ## 👥 Team Members
 
-**Team Name:** YOUR_TEAM_NAME
+**Team Name:** Ai_Agents
 
 | No. | Team Member | Contribution |
 |---:|---|---|
-| 1 | Member 1 | Frontend Development |
-| 2 | Member 2 | Python Backend and API Integration |
-| 3 | Member 3 | Data Visualization and Analytics |
-| 4 | Member 4 | Testing, Documentation, and Deployment |
+| 1 | Abhijeet Patil | Python Backend and API Integration |
+| 2 | Parag Gulve | Frontend Development |
+| 3 | Prachi Shelake | Data Visualization and Analytics |
 
-Update the team name, names, and contributions to reflect your actual team.
 
 ## 🔗 Project Links
 
@@ -306,6 +302,5 @@ GitStory transforms GitHub repository data into an interactive and understandabl
 
 ### 💙 Explore the Code. Understand the Journey. Discover the Story.
 
-**Built with ❤️ by YOUR_TEAM_NAME**
-
+**Built with ❤️ by Ai_Agents**
 </div>
