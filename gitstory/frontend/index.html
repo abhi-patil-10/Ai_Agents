@@ -24,13 +24,14 @@
       text-align: center;
     }
 
-    /* Subtle radial glow behind hero */
+    /* Purple/cyan radial glow behind hero */
     .hero::before {
       content: '';
       position: absolute;
       inset: 0;
       background:
-        radial-gradient(ellipse 70% 50% at 50% -10%, rgba(88,166,255,0.12) 0%, transparent 70%);
+        radial-gradient(ellipse 60% 45% at 50% -5%, rgba(124,92,252,0.18) 0%, transparent 60%),
+        radial-gradient(ellipse 40% 30% at 70% 10%, rgba(34,211,238,0.10) 0%, transparent 50%);
       pointer-events: none;
     }
 
@@ -40,10 +41,12 @@
       position: absolute;
       inset: 0;
       background-image:
-        linear-gradient(rgba(88,166,255,0.04) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(88,166,255,0.04) 1px, transparent 1px);
+        linear-gradient(rgba(124,92,252,0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(124,92,252,0.04) 1px, transparent 1px);
       background-size: 48px 48px;
       pointer-events: none;
+      mask-image: radial-gradient(ellipse 60% 60% at center, black 0%, transparent 70%);
+      -webkit-mask-image: radial-gradient(ellipse 60% 60% at center, black 0%, transparent 70%);
     }
 
     .hero-content {
@@ -59,10 +62,11 @@
       font-weight: var(--fw-medium);
       color: var(--color-accent);
       background: var(--color-accent-muted);
-      border: 1px solid rgba(88,166,255,0.25);
+      border: 1px solid rgba(124,92,252,0.25);
       padding: 6px 14px;
       border-radius: var(--radius-full);
       margin-bottom: 28px;
+      animation: fadeInUp 0.5s ease forwards;
     }
 
     .hero-title {
@@ -72,9 +76,17 @@
       letter-spacing: -0.03em;
       color: var(--color-text-primary);
       margin-bottom: 24px;
+      animation: fadeInUp 0.6s ease forwards;
+      animation-delay: 0.1s;
+      opacity: 0;
     }
 
-    .hero-title .accent { color: var(--color-accent); }
+    .hero-title .accent {
+      background: linear-gradient(135deg, var(--color-accent), var(--color-cyan));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
 
     .hero-description {
       font-size: var(--text-xl);
@@ -83,6 +95,9 @@
       margin-inline: auto;
       margin-bottom: 48px;
       line-height: var(--lh-relaxed);
+      animation: fadeInUp 0.6s ease forwards;
+      animation-delay: 0.2s;
+      opacity: 0;
     }
 
     /* URL input row */
@@ -92,6 +107,9 @@
       max-width: 640px;
       margin-inline: auto;
       margin-bottom: 16px;
+      animation: fadeInUp 0.6s ease forwards;
+      animation-delay: 0.3s;
+      opacity: 0;
     }
 
     .hero-input {
@@ -110,7 +128,7 @@
 
     .hero-input:focus {
       border-color: var(--color-accent);
-      box-shadow: 0 0 0 3px var(--color-accent-muted);
+      box-shadow: 0 0 0 3px var(--color-accent-muted), 0 0 20px rgba(124,92,252,0.12);
     }
 
     .hero-input.error { border-color: var(--color-danger); }
@@ -119,8 +137,8 @@
       padding: 14px 28px;
       font-size: var(--text-base);
       font-weight: var(--fw-semibold);
-      background: linear-gradient(135deg, var(--color-accent), #388bfd);
-      color: #0d1117;
+      background: linear-gradient(135deg, var(--color-accent), var(--color-cyan));
+      color: #fff;
       border: none;
       border-radius: var(--radius-lg);
       cursor: pointer;
@@ -136,8 +154,8 @@
     }
 
     .hero-btn:hover {
-      background: linear-gradient(135deg, #79c0ff, #58a6ff);
-      box-shadow: 0 0 28px rgba(88,166,255,0.35);
+      background: linear-gradient(135deg, var(--color-accent-hover), #67e8f9);
+      box-shadow: 0 0 28px rgba(124,92,252,0.35), 0 0 28px rgba(34,211,238,0.2);
     }
 
     .hero-btn:active  { transform: translateY(1px); }
@@ -172,7 +190,7 @@
       font-weight: var(--fw-semibold);
       text-transform: uppercase;
       letter-spacing: 0.1em;
-      color: var(--color-accent);
+      color: var(--color-cyan);
       margin-bottom: 12px;
       text-align: center;
     }
@@ -208,12 +226,30 @@
       border-radius: var(--radius-xl);
       padding: 32px 28px;
       transition: border-color var(--transition-normal), box-shadow var(--transition-normal), transform var(--transition-normal);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .feature-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, var(--color-accent), var(--color-cyan));
+      opacity: 0;
+      transition: opacity var(--transition-normal);
     }
 
     .feature-card:hover {
-      border-color: var(--color-accent);
-      box-shadow: 0 0 24px rgba(88,166,255,0.12);
-      transform: translateY(-2px);
+      border-color: rgba(124,92,252,0.35);
+      box-shadow: 0 0 24px rgba(124,92,252,0.12), 0 4px 16px rgba(0,0,0,0.3);
+      transform: translateY(-3px);
+    }
+
+    .feature-card:hover::before {
+      opacity: 1;
     }
 
     .feature-icon {
@@ -260,13 +296,46 @@
       font-family: var(--font-mono);
       color: var(--color-text-secondary);
       cursor: pointer;
-      transition: border-color var(--transition-fast), color var(--transition-fast), background var(--transition-fast);
+      transition: border-color var(--transition-fast), color var(--transition-fast), background var(--transition-fast), transform var(--transition-fast);
     }
 
     .example-chip:hover {
       border-color: var(--color-accent);
       color: var(--color-accent);
       background: var(--color-accent-muted);
+      transform: translateY(-1px);
+    }
+
+    /* ── Floating orbs background ─────────────────────────── */
+    .hero-orb {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(80px);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .hero-orb-1 {
+      width: 320px;
+      height: 320px;
+      background: rgba(124,92,252,0.12);
+      top: -60px;
+      left: 15%;
+      animation: float-orb 8s ease-in-out infinite;
+    }
+
+    .hero-orb-2 {
+      width: 240px;
+      height: 240px;
+      background: rgba(34,211,238,0.08);
+      bottom: -40px;
+      right: 10%;
+      animation: float-orb 10s ease-in-out infinite reverse;
+    }
+
+    @keyframes float-orb {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-20px); }
     }
   </style>
 </head>
@@ -305,6 +374,8 @@
   <!-- ── Hero ──────────────────────────────────────────────────────────── -->
   <main>
     <section class="hero" aria-labelledby="hero-heading">
+      <div class="hero-orb hero-orb-1" aria-hidden="true"></div>
+      <div class="hero-orb hero-orb-2" aria-hidden="true"></div>
       <div class="container">
         <div class="hero-content">
           <div class="hero-eyebrow" aria-label="Tagline">

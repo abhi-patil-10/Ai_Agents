@@ -5,29 +5,29 @@
  * Route handlers must not call Chart.js directly.
  */
 
-/* ── Colour palette matching the GitStory dark theme ───────────────────────── */
+/* ── Colour palette matching the GitStory navy/purple/cyan theme ───────────── */
 const CHART_COLORS = [
-  '#58a6ff',  // cyan accent
-  '#3fb950',  // green
-  '#d29922',  // amber
-  '#f85149',  // red
-  '#bc8cff',  // purple
-  '#79c0ff',  // light cyan
-  '#56d364',  // light green
-  '#e3b341',  // gold
-  '#ff7b72',  // light red
-  '#d2a8ff',  // light purple
-  '#ffa657',  // orange
-  '#7ee787',  // mint
-  '#a5d6ff',  // sky blue
-  '#ffc680',  // peach
+  '#7c5cfc',  // purple accent
+  '#22d3ee',  // cyan
+  '#34d399',  // emerald
+  '#fbbf24',  // amber
+  '#f87171',  // rose
+  '#9b7dff',  // light purple
+  '#67e8f9',  // light cyan
+  '#6ee7b7',  // mint
+  '#fcd34d',  // gold
+  '#fca5a5',  // light rose
+  '#a78bfa',  // violet
+  '#5eead4',  // teal
+  '#93c5fd',  // sky blue
+  '#fdba74',  // peach
 ];
 
 const CHART_DEFAULTS = {
   fontFamily: "'Inter', system-ui, sans-serif",
-  textColor: '#8b949e',
-  gridColor: 'rgba(48, 54, 61, 0.6)',
-  borderColor: '#30363d',
+  textColor: '#8892a8',
+  gridColor: 'rgba(30, 39, 71, 0.8)',
+  borderColor: '#1e2747',
 };
 
 /* ── Store chart instances for cleanup ────────────────────────────────────── */
@@ -76,9 +76,9 @@ function renderLanguageChart(canvasId, langData) {
       datasets: [{
         data,
         backgroundColor: colors,
-        borderColor: '#161b22',
+        borderColor: '#0f1528',
         borderWidth: 2,
-        hoverBorderColor: '#e6edf3',
+        hoverBorderColor: '#e8ecf4',
         hoverBorderWidth: 2,
         hoverOffset: 8,
       }],
@@ -115,10 +115,10 @@ function renderLanguageChart(canvasId, langData) {
           },
         },
         tooltip: {
-          backgroundColor: '#21262d',
-          titleColor: '#e6edf3',
-          bodyColor: '#8b949e',
-          borderColor: '#30363d',
+          backgroundColor: '#161d35',
+          titleColor: '#e8ecf4',
+          bodyColor: '#8892a8',
+          borderColor: '#1e2747',
           borderWidth: 1,
           cornerRadius: 8,
           padding: 12,
@@ -172,9 +172,9 @@ function renderCommitActivityChart(canvasId, weeklyData) {
 
   const ctx = canvas.getContext('2d');
   const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
-  gradient.addColorStop(0, 'rgba(88, 166, 255, 0.3)');
-  gradient.addColorStop(0.5, 'rgba(88, 166, 255, 0.08)');
-  gradient.addColorStop(1, 'rgba(88, 166, 255, 0)');
+  gradient.addColorStop(0, 'rgba(124, 92, 252, 0.3)');
+  gradient.addColorStop(0.5, 'rgba(124, 92, 252, 0.08)');
+  gradient.addColorStop(1, 'rgba(124, 92, 252, 0)');
 
   _chartInstances[canvasId] = new Chart(canvas, {
     type: 'line',
@@ -185,12 +185,12 @@ function renderCommitActivityChart(canvasId, weeklyData) {
         data,
         fill: true,
         backgroundColor: gradient,
-        borderColor: '#58a6ff',
+        borderColor: '#7c5cfc',
         borderWidth: 2,
         pointRadius: 0,
         pointHoverRadius: 6,
-        pointHoverBackgroundColor: '#58a6ff',
-        pointHoverBorderColor: '#e6edf3',
+        pointHoverBackgroundColor: '#7c5cfc',
+        pointHoverBorderColor: '#e8ecf4',
         pointHoverBorderWidth: 2,
         tension: 0.4,
       }],
@@ -313,7 +313,7 @@ function renderContributorsChart(canvasId, contributors) {
         y: {
           grid: { display: false },
           ticks: {
-            color: '#e6edf3',
+            color: '#e8ecf4',
             font: { family: CHART_DEFAULTS.fontFamily, size: 12 },
           },
           border: { display: false },
