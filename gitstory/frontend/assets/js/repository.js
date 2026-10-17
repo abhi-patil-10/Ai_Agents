@@ -53,6 +53,7 @@
   let _commitsLoading = false;
   let _commitsExhausted = false;
   let _timeMachineInstance = null;
+  let _codebaseGalaxyInstance = null;
 
   // ── Initialise ────────────────────────────────────────────────────────────
 
@@ -205,6 +206,9 @@
       renderPanelError('time-machine', 'No commit history available for Time Machine.');
     }
 
+    // ── Codebase Galaxy ──────────────────────────────────────────
+    initCodebaseGalaxySection(_hotFilesData, _allCommits);
+
     // ── Summary & Insights (loaded after other panels) ────────────
     loadSummary();
 
@@ -224,6 +228,23 @@
     _timeMachineInstance = new window.TimeMachine.RepositoryTimeMachine(tmCard, {
       owner,
       repo,
+      commits: commits || [],
+    });
+  }
+
+  function initCodebaseGalaxySection(files, commits) {
+    const galaxyCard = document.getElementById('codebase-galaxy');
+    if (!galaxyCard || !window.CodebaseGalaxy) return;
+
+    if (_codebaseGalaxyInstance) {
+      _codebaseGalaxyInstance.destroy();
+      _codebaseGalaxyInstance = null;
+    }
+
+    _codebaseGalaxyInstance = new window.CodebaseGalaxy.CodebaseGalaxyComponent(galaxyCard, {
+      owner,
+      repo,
+      files: files || [],
       commits: commits || [],
     });
   }

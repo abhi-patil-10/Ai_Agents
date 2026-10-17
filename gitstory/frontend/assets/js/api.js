@@ -175,3 +175,51 @@ async function apiFetchSummary(owner, repo) {
 async function apiFetchExport(owner, repo) {
   return apiFetch(`/repositories/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/export`);
 }
+
+// ── Codebase Galaxy & Extended Tree Adapter Interface ────────────────────────
+
+/**
+ * Adapter interface for recursive repository file tree.
+ *
+ * BACKEND REQUIREMENT:
+ * Route: GET /api/repositories/<owner>/<repo>/tree
+ * Contract: { success: true, data: [{ path: string, type: 'blob'|'tree', size?: number }] }
+ *
+ * Current Fallback: Uses apiFetchHotFiles() to construct active hierarchy.
+ */
+async function apiFetchFileTree(owner, repo) {
+  try {
+    return await apiFetch(`/repositories/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/tree`);
+  } catch {
+    // Graceful fallback to hot files metadata
+    const hotResult = await apiFetchHotFiles(owner, repo);
+    return {
+      success: true,
+      data: hotResult.data || [],
+      isFallback: true,
+      message: 'Constructed from recent active repository files',
+    };
+  }
+}
+
+/**
+ * Adapter interface for package dependency relationships.
+ *
+ * BACKEND REQUIREMENT:
+ * Route: GET /api/repositories/<owner>/<repo>/dependencies
+ * Contract: { success: true, data: [{ source: string, target: string, type: string }] }
+ *
+ * Current State: Unavailable on backend. Isolated and clearly returns empty state.
+ */
+async function apiFetchDependencies(owner, repo) {
+  try {
+    return await apiFetch(`/repositories/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/dependencies`);
+  } catch {
+    return {
+      success: false,
+      data: [],
+      isFallback: false,
+      message: 'Dependency extraction requires backend package manifest parsing.',
+    };
+  }
+}

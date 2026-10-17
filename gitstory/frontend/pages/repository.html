@@ -14,6 +14,7 @@
   <link rel="stylesheet" href="../assets/css/dashboard.css" />
   <link rel="stylesheet" href="../assets/css/responsive.css" />
   <link rel="stylesheet" href="../assets/css/time-machine.css" />
+  <link rel="stylesheet" href="../assets/css/codebase-galaxy.css" />
 
   <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js" defer></script>
@@ -177,6 +178,11 @@
         <a href="#time-machine" class="sidebar-link" id="sidebar-time-machine-link">
           <svg class="link-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
           Time Machine
+        </a>
+
+        <a href="#codebase-galaxy" class="sidebar-link" id="sidebar-galaxy-link">
+          <svg class="link-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="3"/><circle cx="19" cy="5" r="2"/><circle cx="5" cy="19" r="2"/><path d="M10.4 10.4 6.4 14.4"/><path d="M17.6 6.4 13.6 10.4"/></svg>
+          Codebase Galaxy
         </a>
 
         <p class="sidebar-nav-label" style="margin-top:16px;">Insights</p>
@@ -374,6 +380,17 @@
               </div>
             </div>
 
+            <!-- Codebase Galaxy -->
+            <div class="card span-2" id="codebase-galaxy">
+              <div class="card-header">
+                <h2 class="card-title"><span aria-hidden="true">🌌</span> Codebase Galaxy</h2>
+                <span class="badge badge-accent">Interactive Visual Map</span>
+              </div>
+              <div class="analytics-loading card-loading">
+                <span class="spinner"></span> Loading codebase galaxy…
+              </div>
+            </div>
+
             <!-- AI Summary & Insights -->
             <div class="card span-2" id="summary">
               <div class="card-header">
@@ -408,12 +425,13 @@
     </main>
   </div><!-- /.app-shell -->
 
-  <!-- Scripts (load order: config → utils → api → charts → time-machine → repository) -->
+  <!-- Scripts (load order: config → utils → api → charts → time-machine → codebase-galaxy → repository) -->
   <script src="../assets/js/config.js"></script>
   <script src="../assets/js/utils.js"></script>
   <script src="../assets/js/api.js"></script>
   <script src="../assets/js/charts.js"></script>
   <script src="../assets/js/time-machine.js"></script>
+  <script src="../assets/js/codebase-galaxy.js"></script>
   <script src="../assets/js/repository.js"></script>
 </body>
 </html>
