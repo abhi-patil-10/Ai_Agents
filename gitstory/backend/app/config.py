@@ -3,7 +3,34 @@ Application configuration loaded from environment variables.
 Never expose secrets or tokens in this module's output.
 """
 import os
-from typing import List
+import re
+from typing import Any, List
+
+
+def _parse_frontend_origins() -> Any:
+    """Parse FRONTEND_ORIGINS env var with support for wildcard, Vercel preview domains, and localhost."""
+    raw = os.environ.get("FRONTEND_ORIGINS", "*").strip()
+    if not raw or raw == "*":
+        return "*"
+    origins: list[Any] = []
+    for item in raw.split(","):
+        item = item.strip()
+        if not item:
+            continue
+        if item == "*":
+            return "*"
+        if item.startswith("http://") or item.startswith("https://"):
+            origins.append(item)
+        else:
+            origins.append(f"https://{item}")
+            origins.append(f"http://{item}")
+    origins.extend([
+        re.compile(r"^https?://.*\.vercel\.app$"),
+        "http://localhost:5500",
+        "http://127.0.0.1:5500",
+        "http://localhost:8000",
+    ])
+    return origins
 
 
 class Config:
@@ -19,14 +46,7 @@ class Config:
     GITHUB_REQUEST_TIMEOUT: int = 10  # seconds
 
     # ── CORS ────────────────────────────────────────────────────────────────
-    FRONTEND_ORIGINS: List[str] = [
-        origin.strip()
-        for origin in os.environ.get(
-            "FRONTEND_ORIGINS",
-            "http://localhost:5500,http://127.0.0.1:5500,http://localhost:8000",
-        ).split(",")
-        if origin.strip()
-    ]
+    FRONTEND_ORIGINS: Any = _parse_frontend_origins()
 
     # ── Server ──────────────────────────────────────────────────────────────
     PORT: int = int(os.environ.get("PORT", "5000"))

@@ -21,7 +21,12 @@
  * @throws {Error} with a user-readable message
  */
 async function apiFetch(path, opts = {}) {
-  const url = `${CONFIG.API_BASE_URL}${path}`;
+  let baseUrl = (typeof CONFIG !== 'undefined' && CONFIG.API_BASE_URL ? CONFIG.API_BASE_URL : 'http://127.0.0.1:5000/api').trim().replace(/\/+$/, '');
+  if (!baseUrl.endsWith('/api')) {
+    baseUrl = `${baseUrl}/api`;
+  }
+  const cleanPath = path.startsWith('/') ? path : `/${path}`;
+  const url = `${baseUrl}${cleanPath}`;
 
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), CONFIG.REQUEST_TIMEOUT_MS);
