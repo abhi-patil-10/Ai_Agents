@@ -43,6 +43,11 @@
 
   // ── State ────────────────────────────────────────────────────────────────
   let _repoData = null;
+  let _languagesData = null;
+  let _activityData = null;
+  let _contributorsData = null;
+  let _hotFilesData = null;
+  let _summaryData = null;
   let _allCommits = [];
   let _commitsPage = 1;
   let _commitsLoading = false;
@@ -94,6 +99,7 @@
 
     // ── Languages ──────────────────────────────────────────────
     if (langResult.status === 'fulfilled' && langResult.value.data) {
+      _languagesData = langResult.value.data;
       const langCard = document.getElementById('languages');
       if (langCard) {
         const langData = langResult.value.data;
@@ -120,6 +126,7 @@
 
     // ── Commit Activity ─────────────────────────────────────────
     if (activityResult.status === 'fulfilled' && activityResult.value.data) {
+      _activityData = activityResult.value.data;
       const actCard = document.getElementById('commit-activity');
       if (actCard) {
         const actData = activityResult.value.data;
@@ -131,6 +138,7 @@
 
     // ── Contributors ────────────────────────────────────────────
     if (contributorsResult.status === 'fulfilled' && contributorsResult.value.data) {
+      _contributorsData = contributorsResult.value.data;
       const contCard = document.getElementById('contributors');
       if (contCard) {
         const contData = contributorsResult.value.data;
@@ -169,6 +177,7 @@
 
     // ── Hot Files ────────────────────────────────────────────────
     if (hotFilesResult.status === 'fulfilled' && hotFilesResult.value.data) {
+      _hotFilesData = hotFilesResult.value.data;
       const hotCard = document.getElementById('hot-files');
       if (hotCard) {
         const hotData = hotFilesResult.value.data;
@@ -551,6 +560,7 @@
     try {
       const result = await apiFetchSummary(owner, repo);
       const data = result.data;
+      _summaryData = data;
 
       const healthColor = data.health_score >= 70 ? '#34d399'
         : data.health_score >= 50 ? '#fbbf24'
@@ -646,8 +656,24 @@
     if (btn) { btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Generating…'; }
 
     try {
-      const result = await apiFetchExport(owner, repo);
-      const blob = new Blob([JSON.stringify(result.data, null, 2)], { type: 'application/json' });
+      let exportData;
+      if (_repoData && _summaryData) {
+        exportData = {
+          report_title: `GitStory Report: ${owner}/${repo}`,
+          generated_at: new Date().toISOString(),
+          repository: _repoData,
+          languages: _languagesData || {},
+          contributors: _contributorsData || [],
+          recent_commits: _allCommits || [],
+          commit_activity: _activityData || [],
+          frequently_changed_files: _hotFilesData || [],
+          summary: _summaryData,
+        };
+      } else {
+        const result = await apiFetchExport(owner, repo);
+        exportData = result.data;
+      }
+      const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
       downloadBlob(blob, `gitstory-${owner}-${repo}-report.json`);
     } catch (err) {
       alert('Export failed: ' + (err.message || 'Unknown error'));
@@ -661,8 +687,23 @@
     if (btn) { btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Generating…'; }
 
     try {
-      const result = await apiFetchExport(owner, repo);
-      const d = result.data;
+      let d;
+      if (_repoData && _summaryData) {
+        d = {
+          report_title: `GitStory Report: ${owner}/${repo}`,
+          generated_at: new Date().toISOString(),
+          repository: _repoData,
+          languages: _languagesData || {},
+          contributors: _contributorsData || [],
+          recent_commits: _allCommits || [],
+          commit_activity: _activityData || [],
+          frequently_changed_files: _hotFilesData || [],
+          summary: _summaryData,
+        };
+      } else {
+        const result = await apiFetchExport(owner, repo);
+        d = result.data;
+      }
       const r = d.repository || {};
       const s = d.summary || {};
 

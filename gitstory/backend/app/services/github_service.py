@@ -3,7 +3,9 @@ GitHub service layer — all communication with the GitHub REST API lives here.
 Flask route handlers must NOT make GitHub API calls directly.
 """
 import logging
+import time
 from concurrent.futures import ThreadPoolExecutor
+from threading import Lock
 from typing import Any
 
 import requests
@@ -19,6 +21,34 @@ from app.utils.errors import (
 logger = logging.getLogger(__name__)
 
 _config = get_config()
+
+# ── In-memory TTL Cache ──────────────────────────────────────────────────────
+_cache: dict[str, tuple[float, Any]] = {}
+_cache_lock = Lock()
+
+
+def _get_from_cache(cache_key: str) -> Any | None:
+    now = time.time()
+    with _cache_lock:
+        item = _cache.get(cache_key)
+        if item is not None:
+            created_at, val = item
+            if now - created_at < _config.CACHE_TTL_SECONDS:
+                return val
+            _cache.pop(cache_key, None)
+    return None
+
+
+def _store_in_cache(cache_key: str, val: Any) -> None:
+    with _cache_lock:
+        _cache[cache_key] = (time.time(), val)
+
+
+def clear_cache() -> None:
+    """Clear all cached responses (useful in tests)."""
+    with _cache_lock:
+        _cache.clear()
+
 
 # ── Internal helpers ──────────────────────────────────────────────────────────
 
@@ -48,6 +78,16 @@ def _request(method: str, path: str, **kwargs: Any) -> dict[str, Any]:
     Raises:
         NotFoundError, RateLimitError, GitHubServiceError, UpstreamTimeoutError
     """
+    cache_key = None
+    if method.upper() == "GET":
+        params = kwargs.get("params")
+        param_str = str(sorted(params.items())) if isinstance(params, dict) else str(params)
+        cache_key = f"{path}?{param_str}"
+        cached = _get_from_cache(cache_key)
+        if cached is not None:
+            logger.debug("Cache HIT: %s", cache_key)
+            return cached
+
     url = f"{_config.GITHUB_API_BASE_URL}{path}"
     try:
         response = requests.request(
@@ -69,7 +109,10 @@ def _request(method: str, path: str, **kwargs: Any) -> dict[str, Any]:
     # ── Status code handling ─────────────────────────────────────────────────
     if response.status_code == 200:
         try:
-            return response.json()
+            data = response.json()
+            if cache_key and isinstance(data, (dict, list)):
+                _store_in_cache(cache_key, data)
+            return data
         except ValueError:
             logger.error("GitHub returned non-JSON body for %s %s", method, path)
             raise GitHubServiceError("GitHub returned an unexpected response format.")
@@ -289,7 +332,7 @@ def get_frequently_changed_files(owner: str, repo: str, limit: int = 10) -> list
     raw_commits: list[dict[str, Any]] = _request(
         "GET",
         f"/repos/{owner}/{repo}/commits",
-        params={"per_page": 20},
+        params={"per_page": 10},
     )
 
     if not isinstance(raw_commits, list):
@@ -311,7 +354,7 @@ def get_frequently_changed_files(owner: str, repo: str, limit: int = 10) -> list
         except (GitHubServiceError, NotFoundError, RateLimitError, UpstreamTimeoutError):
             return sha, commit_date, []
 
-    commits_to_check = raw_commits[:20]
+    commits_to_check = raw_commits[:10]
     with ThreadPoolExecutor(max_workers=5) as executor:
         results = executor.map(_fetch_commit_files, commits_to_check)
 

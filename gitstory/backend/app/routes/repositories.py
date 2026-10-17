@@ -308,19 +308,26 @@ def get_summary(owner: str, repo: str):
 
     current_app.logger.info("Generating summary: %s/%s", owner, repo)
 
+    from concurrent.futures import ThreadPoolExecutor
     from app.services.ai_service import generate_rule_based_summary
 
     try:
-        # Fetch all data needed for the summary
-        repo_data = github_service.get_repository(owner, repo)
-        languages = github_service.get_languages(owner, repo)
-        contributors = github_service.get_contributors(owner, repo)
-        commits = github_service.get_commits(owner, repo)
-        activity = github_service.get_commit_activity(owner, repo)
+        with ThreadPoolExecutor(max_workers=5) as ex:
+            f_repo = ex.submit(github_service.get_repository, owner, repo)
+            f_lang = ex.submit(github_service.get_languages, owner, repo)
+            f_contrib = ex.submit(github_service.get_contributors, owner, repo)
+            f_commits = ex.submit(github_service.get_commits, owner, repo)
+            f_act = ex.submit(github_service.get_commit_activity, owner, repo)
+
+            repo_data = f_repo.result()
+            languages = f_lang.result()
+            contributors = f_contrib.result()
+            commits = f_commits.result()
+            activity = f_act.result()
 
         # Hot files can timeout on large repos — make it optional
         try:
-            hot_files = github_service.get_frequently_changed_files(owner, repo)
+            hot_files = github_service.get_frequently_changed_files(owner, repo, limit=5)
         except Exception:
             hot_files = []
 
@@ -358,18 +365,26 @@ def export_report(owner: str, repo: str):
 
     current_app.logger.info("Exporting report: %s/%s", owner, repo)
 
+    from concurrent.futures import ThreadPoolExecutor
     from app.services.ai_service import generate_rule_based_summary
     from datetime import datetime, timezone
 
     try:
-        repo_data = github_service.get_repository(owner, repo)
-        languages = github_service.get_languages(owner, repo)
-        contributors = github_service.get_contributors(owner, repo)
-        commits = github_service.get_commits(owner, repo)
-        activity = github_service.get_commit_activity(owner, repo)
+        with ThreadPoolExecutor(max_workers=5) as ex:
+            f_repo = ex.submit(github_service.get_repository, owner, repo)
+            f_lang = ex.submit(github_service.get_languages, owner, repo)
+            f_contrib = ex.submit(github_service.get_contributors, owner, repo)
+            f_commits = ex.submit(github_service.get_commits, owner, repo)
+            f_act = ex.submit(github_service.get_commit_activity, owner, repo)
+
+            repo_data = f_repo.result()
+            languages = f_lang.result()
+            contributors = f_contrib.result()
+            commits = f_commits.result()
+            activity = f_act.result()
 
         try:
-            hot_files = github_service.get_frequently_changed_files(owner, repo)
+            hot_files = github_service.get_frequently_changed_files(owner, repo, limit=10)
         except Exception:
             hot_files = []
 
