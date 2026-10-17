@@ -1,0 +1,40 @@
+# Backend .gitignore
+
+# ── Secrets ────────────────────────────────────────────────────────────────────
+.env
+*.env
+!.env.example
+
+# ── Python virtual environments ────────────────────────────────────────────────
+.venv/
+venv/
+env/
+ENV/
+
+# ── Python bytecode and cache ──────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+
+# ── Pytest and coverage ────────────────────────────────────────────────────────
+.pytest_cache/
+.coverage
+coverage.xml
+htmlcov/
+*.junit.xml
+
+# ── IDE and editor ─────────────────────────────────────────────────────────────
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+
+# ── Temporary / generated ──────────────────────────────────────────────────────
+*.log
+*.tmp
+dist/
+build/
+*.egg-info/
