@@ -1,0 +1,27 @@
+# Dependencies & Environments
+.venv/
+venv/
+env/
+node_modules/
+
+# Environment Variables
+.env
+*.env
+!.env.example
+
+# Prevent nested repository collisions
+Ai_Agents/
+
+# Cache & Build
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.coverage
+dist/
+build/
+
+# IDE & OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
