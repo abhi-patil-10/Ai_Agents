@@ -419,3 +419,91 @@ def export_report(owner: str, repo: str):
         return error_response(exc.message, 502)
 
     return success_response(report, f"Report for '{owner}/{repo}' exported successfully.")
+
+
+@repositories_bp.post("/<owner>/<repo>/chat")
+def chat_with_assistant(owner: str, repo: str):
+    """
+    Interact with GitStory AI — Qwen-powered repository assistant.
+    Accepts JSON body: { "message": "...", "history": [...] }
+    """
+    if not is_valid_owner(owner):
+        return error_response(f"'{owner}' is not a valid GitHub owner name.", 400)
+    if not is_valid_repo(repo):
+        return error_response(f"'{repo}' is not a valid GitHub repository name.", 400)
+
+    body = request.get_json(silent=True) or {}
+    user_message = body.get("message", "").strip()
+    if not user_message:
+        return error_response("Missing required 'message' in request body.", 400)
+
+    if len(user_message) > 4000:
+        return error_response("Message exceeds maximum allowed length of 4000 characters.", 400)
+
+    history = body.get("history", [])
+    if not isinstance(history, list):
+        history = []
+
+    current_app.logger.info("AI Chat query for %s/%s: %s", owner, repo, user_message[:60])
+
+    from concurrent.futures import ThreadPoolExecutor
+    from app.services.ai_service import query_qwen_assistant, generate_rule_based_summary
+
+    try:
+        with ThreadPoolExecutor(max_workers=5) as ex:
+            f_repo = ex.submit(github_service.get_repository, owner, repo)
+            f_lang = ex.submit(github_service.get_languages, owner, repo)
+            f_contrib = ex.submit(github_service.get_contributors, owner, repo)
+            f_commits = ex.submit(github_service.get_commits, owner, repo)
+            f_act = ex.submit(github_service.get_commit_activity, owner, repo)
+
+            repo_data = f_repo.result()
+            languages = f_lang.result()
+            contributors = f_contrib.result()
+            commits = f_commits.result()
+            activity = f_act.result()
+
+        try:
+            hot_files = github_service.get_frequently_changed_files(owner, repo, limit=8)
+        except Exception:
+            hot_files = []
+
+        summary = generate_rule_based_summary(
+            repo=repo_data,
+            languages=languages,
+            contributors=contributors,
+            commits=commits,
+            activity=activity,
+            hot_files=hot_files,
+        )
+
+        repo_context = {
+            "repo": repo_data,
+            "languages": languages,
+            "contributors": contributors,
+            "commits": commits,
+            "hot_files": hot_files,
+            "summary": summary,
+        }
+
+        result = query_qwen_assistant(
+            owner=owner,
+            repo=repo,
+            user_message=user_message,
+            chat_history=history,
+            repo_context=repo_context,
+        )
+
+        return success_response(result, f"AI response generated for '{owner}/{repo}'.")
+
+    except NotFoundError as exc:
+        return error_response(exc.message, 404)
+    except RateLimitError as exc:
+        return error_response(exc.message, 429)
+    except UpstreamTimeoutError as exc:
+        return error_response(exc.message, 504)
+    except GitHubServiceError as exc:
+        return error_response(exc.message, 502)
+    except Exception as exc:
+        current_app.logger.error("Unhandled error in chat endpoint: %s", exc)
+        return error_response("An unexpected error occurred while processing your request.", 500)

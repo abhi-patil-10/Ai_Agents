@@ -35,6 +35,11 @@ class Config:
     # ── AI Service (Gemini API - reserved for Phase 2) ──────────────────────
     GEMINI_API_KEY: str | None = os.environ.get("GEMINI_API_KEY") or None
 
+    # ── Ollama Qwen AI Assistant ───────────────────────────────────────────
+    OLLAMA_BASE_URL: str = os.environ.get("OLLAMA_BASE_URL", "http://localhost:11434")
+    OLLAMA_MODEL: str = os.environ.get("OLLAMA_MODEL", "qwen2.5-coder:1.5b")
+    OLLAMA_REQUEST_TIMEOUT: int = int(os.environ.get("OLLAMA_REQUEST_TIMEOUT", "60"))
+
     # ── Database (Future PostgreSQL integration) ───────────────────────────
     # In Phase 1 no database is connected. Configured for future SQLALCHEMY_DATABASE_URI.
     SQLALCHEMY_DATABASE_URI: str | None = os.environ.get("DATABASE_URL") or None

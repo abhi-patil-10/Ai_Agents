@@ -54,6 +54,7 @@
   let _commitsExhausted = false;
   let _timeMachineInstance = null;
   let _codebaseGalaxyInstance = null;
+  let _aiAssistantInstance = null;
 
   // ── Initialise ────────────────────────────────────────────────────────────
 
@@ -209,6 +210,9 @@
     // ── Codebase Galaxy ──────────────────────────────────────────
     initCodebaseGalaxySection(_hotFilesData, _allCommits);
 
+    // ── GitStory AI Assistant (Qwen) ─────────────────────────────
+    initAIAssistantSection();
+
     // ── Summary & Insights (loaded after other panels) ────────────
     loadSummary();
 
@@ -246,6 +250,17 @@
       repo,
       files: files || [],
       commits: commits || [],
+    });
+  }
+
+  function initAIAssistantSection() {
+    const assistantCard = document.getElementById('ai-assistant');
+    if (!window.GitStoryAIAssistant) return;
+
+    _aiAssistantInstance = new window.GitStoryAIAssistant.AIAssistantComponent(assistantCard, {
+      owner,
+      repo,
+      repoData: _repoData || {},
     });
   }
 

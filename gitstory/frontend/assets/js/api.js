@@ -223,3 +223,18 @@ async function apiFetchDependencies(owner, repo) {
     };
   }
 }
+
+/**
+ * Send a chat prompt to the GitStory AI Qwen Assistant.
+ * @param {string} owner
+ * @param {string} repo
+ * @param {string} message
+ * @param {Array<{role: string, content: string}>} [history]
+ * @returns {Promise<ApiResponse>}
+ */
+async function apiSendChatMessage(owner, repo, message, history = []) {
+  return apiFetch(`/repositories/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/chat`, {
+    method: 'POST',
+    body: JSON.stringify({ message, history }),
+  });
+}
