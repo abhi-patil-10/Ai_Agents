@@ -331,3 +331,33 @@ def get_frequently_changed_files(owner: str, repo: str, limit: int = 10) -> list
         }
         for fname, count in sorted_files
     ]
+
+
+def get_releases(owner: str, repo: str, limit: int = 5) -> list[dict[str, Any]]:
+    """
+    Fetch the latest releases for a repository.
+
+    Returns a normalised list of release dicts sorted by published date (desc).
+    """
+    raw: list[dict[str, Any]] = _request(
+        "GET",
+        f"/repos/{owner}/{repo}/releases",
+        params={"per_page": limit},
+    )
+
+    if not isinstance(raw, list):
+        return []
+
+    return [
+        {
+            "id": r.get("id"),
+            "name": r.get("name") or r.get("tag_name", "Release"),
+            "tag_name": r.get("tag_name", ""),
+            "published_at": r.get("published_at", ""),
+            "html_url": r.get("html_url", ""),
+            "prerelease": r.get("prerelease", False),
+            "draft": r.get("draft", False),
+            "body": r.get("body", ""),
+        }
+        for r in raw[:limit]
+    ]

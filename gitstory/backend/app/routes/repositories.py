@@ -258,3 +258,36 @@ def get_hot_files(owner: str, repo: str):
         return error_response(exc.message, 502)
 
     return success_response(data, f"Hot files for '{owner}/{repo}' retrieved successfully.")
+
+
+@repositories_bp.get("/<owner>/<repo>/releases")
+def get_releases(owner: str, repo: str):
+    """
+    Retrieve recent releases for a GitHub repository.
+
+    Path params:
+        owner (str): GitHub username or organisation name.
+        repo  (str): Repository name.
+
+    Returns:
+        JSON with list of releases.
+    """
+    if not is_valid_owner(owner):
+        return error_response(f"'{owner}' is not a valid GitHub owner name.", 400)
+    if not is_valid_repo(repo):
+        return error_response(f"'{repo}' is not a valid GitHub repository name.", 400)
+
+    current_app.logger.info("Fetching releases: %s/%s", owner, repo)
+
+    try:
+        data = github_service.get_releases(owner, repo)
+    except NotFoundError as exc:
+        return error_response(exc.message, 404)
+    except RateLimitError as exc:
+        return error_response(exc.message, 429)
+    except UpstreamTimeoutError as exc:
+        return error_response(exc.message, 504)
+    except GitHubServiceError as exc:
+        return error_response(exc.message, 502)
+
+    return success_response(data, f"Releases for '{owner}/{repo}' retrieved successfully.")

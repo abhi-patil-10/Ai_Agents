@@ -145,3 +145,13 @@ async function apiFetchCommits(owner, repo) {
 async function apiFetchHotFiles(owner, repo) {
   return apiFetch(`/repositories/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/hot-files`);
 }
+
+/**
+ * Fetch the latest releases for a repository (up to 5).
+ * @param {string} owner
+ * @param {string} repo
+ * @returns {Promise<ApiResponse>}
+ */
+async function apiFetchReleases(owner, repo) {
+  return apiFetch(`/repositories/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/releases`);
+}

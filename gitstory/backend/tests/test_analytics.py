@@ -66,6 +66,19 @@ _MOCK_HOT_FILES = [
     {"filename": "README.md", "changes": 8, "last_changed": "2024-01-14T09:00:00Z"},
 ]
 
+_MOCK_RELEASES = [
+    {
+        "id": 1,
+        "name": "v1.0.0",
+        "tag_name": "v1.0.0",
+        "published_at": "2024-01-10T12:00:00Z",
+        "html_url": "https://github.com/test/repo/releases/tag/v1.0.0",
+        "prerelease": False,
+        "draft": False,
+        "body": "Initial release",
+    }
+]
+
 
 # ── Commits endpoint tests ──────────────────────────────────────────────────
 
@@ -187,6 +200,36 @@ class TestHotFilesEndpoint:
 
     def test_invalid_owner_rejected(self, client):
         resp = client.get("/api/repositories/--bad--/repo/hot-files")
+        assert resp.status_code == 400
+
+
+# ── Releases endpoint tests ──────────────────────────────────────────────────
+
+class TestReleasesEndpoint:
+    @patch("app.routes.repositories.github_service.get_releases")
+    def test_releases_returns_200(self, mock_get, client):
+        mock_get.return_value = _MOCK_RELEASES
+        resp = client.get("/api/repositories/test/repo/releases")
+        assert resp.status_code == 200
+        data = resp.get_json()
+        assert data["success"] is True
+        assert len(data["data"]) == 1
+        assert data["data"][0]["tag_name"] == "v1.0.0"
+
+    @patch("app.routes.repositories.github_service.get_releases")
+    def test_releases_not_found(self, mock_get, client):
+        mock_get.side_effect = NotFoundError("Repository not found")
+        resp = client.get("/api/repositories/test/repo/releases")
+        assert resp.status_code == 404
+
+    @patch("app.routes.repositories.github_service.get_releases")
+    def test_releases_rate_limited(self, mock_get, client):
+        mock_get.side_effect = RateLimitError()
+        resp = client.get("/api/repositories/test/repo/releases")
+        assert resp.status_code == 429
+
+    def test_invalid_owner_rejected(self, client):
+        resp = client.get("/api/repositories/--bad--/repo/releases")
         assert resp.status_code == 400
 
 
