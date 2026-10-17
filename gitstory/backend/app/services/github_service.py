@@ -73,6 +73,19 @@ def _request(method: str, path: str, **kwargs: Any) -> dict[str, Any]:
             logger.error("GitHub returned non-JSON body for %s %s", method, path)
             raise GitHubServiceError("GitHub returned an unexpected response format.")
 
+    if response.status_code == 202:
+        # GitHub returns 202 while computing statistics — return empty result
+        # so callers can retry
+        logger.info("GitHub is computing stats for %s %s (202 Accepted)", method, path)
+        try:
+            return response.json()
+        except ValueError:
+            return {}
+
+    if response.status_code == 204:
+        # No content — return empty
+        return {}
+
     if response.status_code == 404:
         raise NotFoundError("Repository not found. Check the URL and try again.")
 
@@ -229,7 +242,7 @@ def get_contributors(owner: str, repo: str, limit: int = 15) -> list[dict[str, A
     ]
 
 
-def get_commits(owner: str, repo: str, per_page: int = 20) -> list[dict[str, Any]]:
+def get_commits(owner: str, repo: str, per_page: int = 20, page: int = 1) -> list[dict[str, Any]]:
     """
     Fetch recent commits for a repository's default branch.
 
@@ -238,7 +251,7 @@ def get_commits(owner: str, repo: str, per_page: int = 20) -> list[dict[str, Any
     raw: list[dict[str, Any]] = _request(
         "GET",
         f"/repos/{owner}/{repo}/commits",
-        params={"per_page": per_page},
+        params={"per_page": per_page, "page": page},
     )
 
     if not isinstance(raw, list):

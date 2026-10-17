@@ -3,6 +3,11 @@
  *
  * Handles the repository URL input on index.html and
  * navigates to the dashboard on successful validation.
+ *
+ * Accepts both full URLs and shorthand:
+ *   https://github.com/facebook/react
+ *   github.com/facebook/react
+ *   facebook/react
  */
 
 (function () {
@@ -34,25 +39,45 @@
 
     if (isSubmitting) return;
 
-    const rawUrl = urlInput.value.trim();
+    const rawInput = urlInput.value.trim();
 
     // Client-side presence check
-    if (!rawUrl) {
-      showError('Please enter a GitHub repository URL.');
+    if (!rawInput) {
+      showError('Please enter a GitHub repository URL or owner/repo.');
       urlInput.focus();
       return;
     }
 
     clearError();
+
+    // ── Client-side shorthand detection ────────────────────────────────
+    // Accept "owner/repo" shorthand without requiring a full URL.
+    // Pattern: letters, digits, hyphens, dots — no slashes except one separator.
+    const shorthandMatch = rawInput.match(
+      /^([a-zA-Z0-9][a-zA-Z0-9\-\.]{0,38})\/([a-zA-Z0-9_\-\.]{1,100})$/
+    );
+
+    if (shorthandMatch) {
+      const owner = shorthandMatch[1];
+      const repo  = shorthandMatch[2];
+
+      // Navigate directly — skip backend validation for shorthand.
+      // The dashboard page will call the API and handle 404s there.
+      sessionSet('pendingRepo', { owner, repo, url: rawInput });
+      window.location.href = `pages/repository.html?owner=${encodeURIComponent(owner)}&repo=${encodeURIComponent(repo)}`;
+      return;
+    }
+
+    // ── Full URL path — validate via backend ──────────────────────────
     setLoading(true);
 
     try {
       // Ask the backend to validate the URL and extract owner/repo
-      const result = await apiValidateRepository(rawUrl);
+      const result = await apiValidateRepository(rawInput);
       const { owner, repo } = result.data;
 
       // Store the validated URL in sessionStorage for the dashboard page
-      sessionSet('pendingRepo', { owner, repo, url: rawUrl });
+      sessionSet('pendingRepo', { owner, repo, url: rawInput });
 
       // Navigate to the repository dashboard
       window.location.href = `pages/repository.html?owner=${encodeURIComponent(owner)}&repo=${encodeURIComponent(repo)}`;

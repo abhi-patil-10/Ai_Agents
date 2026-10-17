@@ -194,6 +194,9 @@ def get_commits(owner: str, repo: str):
         owner (str): GitHub username or organisation name.
         repo  (str): Repository name.
 
+    Query params:
+        page (int): Page number (default 1).
+
     Returns:
         JSON with list of recent commits (sha, message, author, date).
     """
@@ -202,10 +205,16 @@ def get_commits(owner: str, repo: str):
     if not is_valid_repo(repo):
         return error_response(f"'{repo}' is not a valid GitHub repository name.", 400)
 
-    current_app.logger.info("Fetching commits: %s/%s", owner, repo)
+    page = request.args.get("page", "1")
+    try:
+        page = max(1, int(page))
+    except (ValueError, TypeError):
+        page = 1
+
+    current_app.logger.info("Fetching commits: %s/%s (page %d)", owner, repo, page)
 
     try:
-        data = github_service.get_commits(owner, repo)
+        data = github_service.get_commits(owner, repo, page=page)
     except NotFoundError as exc:
         return error_response(exc.message, 404)
     except RateLimitError as exc:
