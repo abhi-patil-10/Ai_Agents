@@ -1,324 +1,206 @@
-# GitStory
+# GitStory — Visual GitHub Repository Explorer
 
-> **"Every Repository Has a Story. Discover Yours."**
-> 
-> Visual AI-powered GitHub Repository Explorer — transforms public GitHub repositories into interactive
-> development analytics dashboards.
+> Every repository has a story. Discover yours.
 
-[![Python](https://img.shields.io/badge/Python-3.11+-blue)](https://python.org)
-[![Flask](https://img.shields.io/badge/Flask-3.x-green)](https://flask.palletsprojects.com)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow)](LICENSE)
+GitStory transforms any public GitHub repository into an interactive visual overview of its development history, contributors, programming languages, recent commits, and frequently changed files — all without requiring a GitHub account.
 
----
+## Problem Statement
 
-## Overview
+Understanding a GitHub repository's development patterns requires navigating multiple tabs, pages, and interfaces. There is no single dashboard that consolidates repository statistics, commit activity, contributor rankings, language distribution, and codebase hotspots into one cohesive view.
 
-GitStory lets you paste any public GitHub repository URL and instantly see:
+## Proposed Solution
 
-- **Repository metadata** — name, description, stars, forks, open issues, license
-- **Language breakdown** *(coming soon)*
-- **Commit activity timeline** *(coming soon)*
-- **Top contributors** *(coming soon)*
-- **Frequently changed files** *(coming soon)*
+GitStory provides a single-page analytics dashboard that fetches real data from the GitHub REST API and presents it through interactive charts, ranked lists, and visual summaries.
 
-No sign-in, no API key from you — just paste a URL and go.
+Paste a GitHub URL or type `owner/repo` — GitStory does the rest.
 
----
+## Core Features
+
+| Feature | Description |
+|---|---|
+| **Repository Search** | Full URL and shorthand (`owner/repo`) input with validation |
+| **Repository Overview** | Stars, forks, issues, watchers, license, language, topics, dates |
+| **Commit Activity Timeline** | Interactive weekly chart with 1M/3M/6M/1Y range selector |
+| **Contributor Statistics** | Ranked contributor list with avatars, commit counts, and share percentages |
+| **Language Distribution** | Doughnut chart with stacked bar and legend showing byte-based percentages |
+| **Recent Commits** | Paginated commit list with author, SHA, date, and GitHub link |
+| **Frequently Changed Files** | Top 10 most-modified files from recent commits with GitHub links |
+| **Error Handling** | Rate limit detection, 404 handling, network errors, panel-level failures |
+| **Responsive Design** | Desktop, tablet, and mobile layouts with dark navy/purple/cyan theme |
 
 ## Technology Stack
 
 | Layer | Technology |
 |---|---|
-| Frontend | HTML5, CSS3, Vanilla JavaScript |
-| Visualisations | Chart.js (wired in next phase) |
-| Backend | Python 3, Flask 3 |
-| CORS | Flask-CORS |
-| HTTP client | Requests |
-| Config | python-dotenv |
-| Production server | Gunicorn |
-| Testing | pytest + unittest.mock |
+| **Backend** | Python 3.12, Flask 3.x, Gunicorn |
+| **Frontend** | Vanilla HTML/CSS/JavaScript, Chart.js 4.x |
+| **API** | GitHub REST API v3 (2022-11-28) |
+| **Testing** | pytest, pytest-cov |
+| **Design** | Custom CSS design system (navy/purple/cyan) |
 
----
-
-## Features (v0.1 — Foundation)
-
-- ✅ Repository metadata from the GitHub REST API
-- ✅ URL validation on both frontend and backend
-- ✅ Consistent JSON response envelope
-- ✅ Typed error handling (404, 429, 502, 504)
-- ✅ Skeleton loading states and error states in the dashboard
-- ✅ Mobile-responsive layout
-- ✅ Optional GitHub token for higher rate limits
-- ✅ Automated tests (health + validators + repository endpoint)
-
----
-
-## Directory Structure
+## Architecture & Data Flow
 
 ```
-gitstory/
-├── frontend/                  # Static frontend (served by any static server)
-│   ├── index.html             # Landing page
-│   ├── pages/
-│   │   └── repository.html    # Repository dashboard
-│   ├── assets/
-│   │   ├── css/               # style.css · dashboard.css · responsive.css
-│   │   └── js/                # config.js · api.js · utils.js · app.js · repository.js · charts.js
-│   └── favicon.svg
-├── backend/                   # Python Flask API
-│   ├── app/
-│   │   ├── __init__.py        # Application factory
-│   │   ├── config.py          # Environment configuration
-│   │   ├── extensions.py      # Flask extensions
-│   │   ├── routes/            # health.py · repositories.py
-│   │   ├── services/          # github_service.py · ai_service.py
-│   │   └── utils/             # validators.py · errors.py
-│   ├── tests/                 # test_health.py · test_validators.py
-│   ├── .env.example
-│   ├── requirements.txt
-│   ├── run.py                 # Development entry point
-│   └── wsgi.py                # Production (Gunicorn) entry point
-├── docs/
-│   └── architecture.md
-├── README.md
-└── LICENSE
+┌──────────────┐     ┌─────────────────┐     ┌──────────────────┐
+│   Browser    │────▶│  Flask Backend   │────▶│  GitHub REST API  │
+│  (Frontend)  │◀────│  (Port 5000)     │◀────│  api.github.com   │
+│  Port 5500   │     │                  │     │                   │
+└──────────────┘     └─────────────────┘     └──────────────────┘
 ```
 
----
+### Frontend Architecture
+```
+index.html          → Landing page with search input
+pages/repository.html → Dashboard with analytics panels
+assets/css/          → Design system (style.css, dashboard.css, responsive.css)
+assets/js/           → Modules (config.js, utils.js, api.js, charts.js, app.js, repository.js)
+```
 
-## Prerequisites
+### Backend Architecture
+```
+backend/
+├── run.py              → Application entry point
+├── app/
+│   ├── __init__.py     → Flask factory with CORS and error handlers
+│   ├── config.py       → Environment configuration
+│   ├── routes/
+│   │   ├── health.py       → GET /api/health
+│   │   └── repositories.py → All /api/repositories/* endpoints
+│   ├── services/
+│   │   └── github_service.py → GitHub API client with error handling
+│   └── utils/
+│       ├── errors.py       → Custom exceptions and JSON helpers
+│       └── validators.py   → URL parsing and input validation
+└── tests/              → pytest test suite (31 tests)
+```
 
-- **Python 3.11+**
-- **pip**
-- A **static file server** for the frontend (e.g. the VS Code Live Server extension, Python's `http.server`, or `npx serve`)
+## GitHub API Endpoints Used
 
----
+| Endpoint | Purpose |
+|---|---|
+| `GET /repos/{owner}/{repo}` | Repository metadata (stars, forks, etc.) |
+| `GET /repos/{owner}/{repo}/languages` | Language byte counts |
+| `GET /repos/{owner}/{repo}/stats/commit_activity` | Weekly commit activity (52 weeks) |
+| `GET /repos/{owner}/{repo}/contributors` | Top contributors |
+| `GET /repos/{owner}/{repo}/commits` | Recent commits (paginated) |
+| `GET /repos/{owner}/{repo}/commits/{sha}` | Commit file details (for hot files) |
 
-## Installation & Startup
+### API Rate Limits
 
-### 1 — Clone the repository
+| Mode | Rate Limit |
+|---|---|
+| Unauthenticated | 60 requests/hour |
+| Authenticated (token) | 5,000 requests/hour |
+
+The backend uses an optional `GITHUB_TOKEN` environment variable. Create a personal access token at [github.com/settings/tokens](https://github.com/settings/tokens) — no scopes needed for public repositories.
+
+## Installation & Setup
+
+### Prerequisites
+
+- Python 3.10+ (3.12 recommended)
+- pip
+- Git
+
+### 1. Clone the repository
 
 ```bash
-git clone <your-repo-url>
-cd gitstory
+git clone https://github.com/abhi-patil-10/Ai_Agents.git
+cd Ai_Agents/gitstory
 ```
 
-### 2 — Set up the backend
+### 2. Backend setup
 
 ```bash
 cd backend
+
+# Create virtual environment
 python -m venv .venv
-```
 
-**Windows PowerShell:**
-```powershell
-.\.venv\Scripts\Activate.ps1
-pip install -r requirements.txt
-```
-
-**macOS / Linux:**
-```bash
+# Activate (Windows)
+.venv\Scripts\activate
+# Activate (macOS/Linux)
 source .venv/bin/activate
+
+# Install dependencies
 pip install -r requirements.txt
-```
 
-### 3 — Configure environment variables
-
-```bash
+# Configure environment
 cp .env.example .env
+# Edit .env and optionally add your GITHUB_TOKEN
 ```
 
-Edit `.env`. At minimum, set a `GITHUB_TOKEN` to avoid the 60 req/hour anonymous limit:
-
-```env
-GITHUB_TOKEN=ghp_your_token_here
-```
-
-> **Create a token** at [github.com/settings/tokens](https://github.com/settings/tokens).
-> No scopes are required for public repository access.
-
-### 4 — Start the backend
+### 3. Start the backend
 
 ```bash
 python run.py
-# Flask starts on http://127.0.0.1:5000
+# Server starts on http://localhost:5000
 ```
 
-### 5 — Serve the frontend
+### 4. Start the frontend
 
-In a **separate terminal** from the project root:
-
-**Python (built-in):**
 ```bash
-cd gitstory/frontend
+cd ../frontend
 python -m http.server 5500
-# Open http://localhost:5500
+# Open http://localhost:5500 in your browser
 ```
-
-**Node.js (npx):**
-```bash
-cd gitstory/frontend
-npx serve -l 5500 .
-```
-
-**VS Code:** Install the *Live Server* extension and click **Go Live** with `frontend/index.html` open.
-
-> **Important:** Do not open `index.html` directly as a `file://` URL — CORS will block the API calls.
-
----
-
-## Environment Variables
-
-| Variable | Default | Description |
-|---|---|---|
-| `FLASK_DEBUG` | `1` | Enable interactive debugging mode (`1` = on, `0` = off) |
-| `FLASK_ENV` | `development` | `development` \| `production` \| `testing` |
-| `PORT` | `5000` | Port the Flask dev server listens on |
-| `GITHUB_TOKEN` | *(empty)* | Optional PAT — increases rate limit to 5 000 req/hour |
-| `FRONTEND_ORIGINS` | `http://localhost:5500,...` | Comma-separated list of allowed CORS origins |
-| `GEMINI_API_KEY` | *(empty)* | Optional key for Gemini API (reserved for Phase 2) |
-| `CACHE_TTL_SECONDS` | `300` | Future cache TTL in seconds |
-| `LOG_LEVEL` | `INFO` | Python logging level (`DEBUG`, `INFO`, `WARNING`, `ERROR`) |
-
----
-
-## API Endpoints
-
-### Health check
-
-```
-GET /api/health
-```
-
-```json
-{
-  "success": true,
-  "data": {
-    "status": "ok",
-    "timestamp": "2024-01-15T10:00:00+00:00",
-    "python_version": "3.11.7",
-    "platform": "Windows"
-  },
-  "message": "GitStory API is running."
-}
-```
-
-### Validate a GitHub URL
-
-```
-GET /api/repositories/validate?url=https://github.com/torvalds/linux
-```
-
-```json
-{
-  "success": true,
-  "data": { "owner": "torvalds", "repo": "linux", "url": "https://github.com/torvalds/linux" },
-  "message": "Repository URL is valid."
-}
-```
-
-### Fetch repository metadata
-
-```
-GET /api/repositories/torvalds/linux
-```
-
-```json
-{
-  "success": true,
-  "data": {
-    "name": "linux",
-    "full_name": "torvalds/linux",
-    "description": "Linux kernel source tree",
-    "html_url": "https://github.com/torvalds/linux",
-    "stars": 185000,
-    "forks": 54000,
-    "open_issues": 300,
-    "watchers": 185000,
-    "default_branch": "master",
-    "primary_language": "C",
-    "topics": [],
-    "is_fork": false,
-    "is_archived": false,
-    "license": "GPL-2.0",
-    "created_at": "2011-09-04T22:48:12Z",
-    "updated_at": "2024-01-01T00:00:00Z",
-    "pushed_at": "2024-01-01T00:00:00Z",
-    "homepage": null,
-    "size_kb": 4500000,
-    "visibility": "public"
-  },
-  "message": "Repository 'torvalds/linux' retrieved successfully."
-}
-```
-
-### Error response shape
-
-```json
-{
-  "success": false,
-  "data": null,
-  "message": "Repository not found. Check the URL and try again."
-}
-```
-
----
 
 ## Running Tests
 
 ```bash
 cd backend
-# Activate your virtual environment first
-pytest tests/ -v
+python -m pytest tests/ -v
 ```
 
-With coverage:
-```bash
-pytest tests/ -v --cov=app --cov-report=term-missing
-```
+Expected: **31 tests, all passing**.
 
-Tests use `unittest.mock` — no real GitHub API calls, no token required.
+## Error Handling & API Limitations
+
+- **Rate limiting**: Unauthenticated requests are limited to 60/hour. The app detects 403/429 responses and displays clear rate-limit messages.
+- **404 errors**: Invalid or private repositories show user-friendly error pages with retry options.
+- **Panel-level failures**: Individual analytics panels fail independently — a language chart failure won't break the commit timeline.
+- **Network errors**: Connection failures and timeouts are caught with retry guidance.
+- **Hot files analysis**: Based on the last 30 commits only. Results represent observed changes, not full repository history.
+- **Commit activity**: Uses GitHub's pre-computed weekly statistics, which may take time to compute for newly accessed repositories (HTTP 202).
+
+## Screenshots
+
+> Screenshots will be added after the demo video is recorded.
+
+## Future Improvements
+
+- AI-generated repository summaries using commit messages and metadata
+- Caching layer (Redis/in-memory) to reduce API calls
+- Comparison mode for multiple repositories
+- Branch-specific analytics
+- Code complexity trends
+- Pull request analytics
+- Dark/light theme toggle
+- Deployment to Vercel/Render with persistent backend
+
+## Live Deployment
+
+> **URL**: `[TO BE ADDED AFTER DEPLOYMENT]`
+
+## Demo Video
+
+> **URL**: `[TO BE ADDED]`
+
+A 3–5 minute walkthrough demonstrating:
+1. Landing page and repository search
+2. Repository overview statistics
+3. Commit activity timeline with date range filtering
+4. Contributor statistics and rankings
+5. Language distribution chart
+6. Recent commits with pagination
+7. Frequently changed files analysis
+8. Error handling and edge cases
+9. Responsive design
+
+## Team
+
+**Abhi Patil** — Full-stack development, UI/UX design, and API integration.
 
 ---
 
-## Troubleshooting
-
-| Symptom | Fix |
-|---|---|
-| `CORS` errors in the browser console | Ensure `FRONTEND_ORIGINS` in `.env` includes your frontend URL (e.g. `http://localhost:5500`) |
-| `Could not reach the GitStory backend` | Make sure `python run.py` is running and `CONFIG.API_BASE_URL` in `config.js` matches the port |
-| `GitHub API rate limit exceeded` | Add a `GITHUB_TOKEN` to `.env` |
-| `Repository not found` | Check the URL — the repository might be private or the owner/repo name has a typo |
-| `ModuleNotFoundError` | Activate the virtual environment and run `pip install -r requirements.txt` |
-| Tests fail with import errors | Run pytest from the `backend/` directory, not the project root |
-
----
-
-## Production Deployment
-
-```bash
-cd backend
-gunicorn --bind 0.0.0.0:$PORT wsgi:app
-```
-
-Set `FLASK_ENV=production` and a strong `SECRET_KEY` in your production environment.
-Serve the `frontend/` directory with Nginx, Caddy, or any static host (GitHub Pages, Vercel, Netlify).
-
----
-
-## Roadmap
-
-- [ ] Commit activity chart (Chart.js line chart)
-- [ ] Contributor analytics (doughnut chart)
-- [ ] Language distribution (bar chart from `/repos/{owner}/{repo}/languages`)
-- [ ] Recent commits list
-- [ ] Frequently changed files analysis
-- [ ] Optional in-memory or Redis caching layer
-- [ ] PostgreSQL persistence for saved dashboards
-- [ ] Dark / light theme toggle
-
----
-
-## License
-
-MIT — see [LICENSE](LICENSE).
+*Built for the Buildathon — October 2026*
