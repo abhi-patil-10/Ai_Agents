@@ -172,6 +172,18 @@
           <svg class="link-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
           Hot Files
         </a>
+
+        <p class="sidebar-nav-label" style="margin-top:16px;">Insights</p>
+
+        <a href="#summary" class="sidebar-link">
+          <svg class="link-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/></svg>
+          Summary & Insights
+        </a>
+
+        <a href="#export" class="sidebar-link">
+          <svg class="link-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Export Report
+        </a>
       </nav>
     </aside>
 
@@ -342,6 +354,33 @@
               </div>
               <div class="analytics-loading card-loading">
                 <span class="spinner"></span> Loading hot files…
+              </div>
+            </div>
+
+            <!-- AI Summary & Insights -->
+            <div class="card span-2" id="summary">
+              <div class="card-header">
+                <h2 class="card-title"><span aria-hidden="true">🧠</span> Summary & Insights</h2>
+                <span class="badge badge-neutral">Rule-based</span>
+              </div>
+              <div class="analytics-loading card-loading">
+                <span class="spinner"></span> Generating insights…
+              </div>
+            </div>
+
+            <!-- Export Report -->
+            <div class="card span-2" id="export">
+              <div class="card-header">
+                <h2 class="card-title"><span aria-hidden="true">📥</span> Export Report</h2>
+              </div>
+              <div style="padding:16px;display:flex;flex-wrap:wrap;gap:12px;align-items:center;">
+                <button class="btn btn-primary btn-sm" id="export-json-btn" disabled>
+                  <span>📄</span> Download JSON Report
+                </button>
+                <button class="btn btn-ghost btn-sm" id="export-md-btn" disabled>
+                  <span>📝</span> Download Markdown Report
+                </button>
+                <span style="font-size:0.75rem;color:var(--color-text-muted);margin-left:auto;">Complete repository analysis report</span>
               </div>
             </div>
 

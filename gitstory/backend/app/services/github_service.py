@@ -3,6 +3,7 @@ GitHub service layer — all communication with the GitHub REST API lives here.
 Flask route handlers must NOT make GitHub API calls directly.
 """
 import logging
+from concurrent.futures import ThreadPoolExecutor
 from typing import Any
 
 import requests
@@ -280,16 +281,15 @@ def get_commits(owner: str, repo: str, per_page: int = 20, page: int = 1) -> lis
 
 def get_frequently_changed_files(owner: str, repo: str, limit: int = 10) -> list[dict[str, Any]]:
     """
-    Analyse the most frequently changed files from the last 100 commits.
+    Analyse the most frequently changed files from recent commits.
 
-    Fetches commits, then for each commit fetches the list of changed files.
-    Aggregates file change counts and returns top N files.
+    Fetches commits, then concurrently fetches the list of changed files
+    for up to 20 commits to aggregate file change counts.
     """
-    # Fetch last 100 commits (just SHAs)
     raw_commits: list[dict[str, Any]] = _request(
         "GET",
         f"/repos/{owner}/{repo}/commits",
-        params={"per_page": 30},  # limit to 30 to avoid rate-limit pressure
+        params={"per_page": 20},
     )
 
     if not isinstance(raw_commits, list):
@@ -298,29 +298,32 @@ def get_frequently_changed_files(owner: str, repo: str, limit: int = 10) -> list
     file_counts: dict[str, int] = {}
     file_last_changed: dict[str, str] = {}
 
-    for commit_item in raw_commits[:30]:
-        sha = commit_item.get("sha", "")
+    def _fetch_commit_files(item: dict[str, Any]) -> tuple[str, str, list[dict[str, Any]]]:
+        sha = item.get("sha", "")
+        commit_date = (item.get("commit", {})
+                       .get("author", {})
+                       .get("date", ""))
         if not sha:
-            continue
-
+            return sha, commit_date, []
         try:
-            commit_detail = _request("GET", f"/repos/{owner}/{repo}/commits/{sha}")
-        except (GitHubServiceError, NotFoundError, RateLimitError):
-            continue  # skip failed fetches gracefully
+            detail = _request("GET", f"/repos/{owner}/{repo}/commits/{sha}")
+            return sha, commit_date, detail.get("files", [])
+        except (GitHubServiceError, NotFoundError, RateLimitError, UpstreamTimeoutError):
+            return sha, commit_date, []
 
-        for file_entry in commit_detail.get("files", []):
+    commits_to_check = raw_commits[:20]
+    with ThreadPoolExecutor(max_workers=5) as executor:
+        results = executor.map(_fetch_commit_files, commits_to_check)
+
+    for sha, commit_date, files in results:
+        for file_entry in files:
             filename = file_entry.get("filename", "")
             if not filename:
                 continue
             file_counts[filename] = file_counts.get(filename, 0) + 1
-
-            commit_date = (commit_item.get("commit", {})
-                           .get("author", {})
-                           .get("date", ""))
             if filename not in file_last_changed or commit_date > file_last_changed.get(filename, ""):
                 file_last_changed[filename] = commit_date
 
-    # Sort by change count descending
     sorted_files = sorted(file_counts.items(), key=lambda x: x[1], reverse=True)[:limit]
 
     return [

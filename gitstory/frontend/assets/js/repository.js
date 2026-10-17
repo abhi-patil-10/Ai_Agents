@@ -187,6 +187,12 @@
     } else {
       renderPanelError('hot-files', 'Could not load hot files data.');
     }
+
+    // ── Summary & Insights (loaded after other panels) ────────────
+    loadSummary();
+
+    // ── Enable export buttons ─────────────────────────────────────
+    enableExportButtons();
   }
 
   // ── Render helpers ──────────────────────────────────────────────────────
@@ -534,5 +540,208 @@
     if (!text) { el.classList.add('hidden'); return; }
     el.textContent = text;
     el.className   = `badge ${cssClass}`;
+  }
+
+  // ── Summary & Insights ──────────────────────────────────────────────────
+
+  async function loadSummary() {
+    const summaryCard = document.getElementById('summary');
+    if (!summaryCard) return;
+
+    try {
+      const result = await apiFetchSummary(owner, repo);
+      const data = result.data;
+
+      const healthColor = data.health_score >= 70 ? '#34d399'
+        : data.health_score >= 50 ? '#fbbf24'
+        : data.health_score >= 30 ? '#fb923c' : '#f87171';
+
+      const insightsHtml = (data.insights || []).map(insight =>
+        `<li style="padding:6px 0;border-bottom:1px solid var(--color-border-subtle);font-size:0.85rem;color:var(--color-text-secondary);line-height:1.5;">${escapeHtml(insight)}</li>`
+      ).join('');
+
+      // Time Machine data from metrics
+      const ageDays = data.metrics?.age_days || 0;
+      const ageYears = Math.floor(ageDays / 365);
+      const ageMonths = Math.floor((ageDays % 365) / 30);
+      const ageLabel = ageDays > 365
+        ? `${ageYears}y ${ageMonths}m`
+        : ageDays > 30 ? `${Math.floor(ageDays / 30)} months` : `${ageDays} days`;
+
+      summaryCard.innerHTML = `
+        <div class="card-header">
+          <h2 class="card-title"><span aria-hidden="true">🧠</span> Summary & Insights</h2>
+          <span class="badge badge-neutral">Rule-based Analysis</span>
+        </div>
+        <div style="padding:16px;">
+          <!-- Health Score -->
+          <div style="display:flex;align-items:center;gap:20px;margin-bottom:20px;padding:16px;background:var(--color-bg-elevated);border-radius:var(--radius-md);border:1px solid var(--color-border);">
+            <div style="position:relative;width:72px;height:72px;flex-shrink:0;">
+              <svg viewBox="0 0 36 36" style="width:72px;height:72px;transform:rotate(-90deg);">
+                <circle cx="18" cy="18" r="15.9" fill="none" stroke="var(--color-border)" stroke-width="3"></circle>
+                <circle cx="18" cy="18" r="15.9" fill="none" stroke="${healthColor}" stroke-width="3"
+                  stroke-dasharray="${data.health_score} ${100 - data.health_score}"
+                  stroke-linecap="round" style="transition:stroke-dasharray 1s ease;"></circle>
+              </svg>
+              <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:1.1rem;font-weight:700;color:${healthColor};">
+                ${data.health_score}
+              </div>
+            </div>
+            <div style="flex:1;">
+              <div style="font-size:1rem;font-weight:600;color:var(--color-text-primary);margin-bottom:4px;">Health Score: ${data.health_label}</div>
+              <p style="font-size:0.8rem;color:var(--color-text-secondary);line-height:1.5;margin:0;">${escapeHtml(data.summary)}</p>
+            </div>
+          </div>
+
+          <!-- Time Machine -->
+          <div style="display:flex;gap:12px;margin-bottom:20px;flex-wrap:wrap;">
+            <div style="flex:1;min-width:140px;padding:12px;background:var(--color-bg-elevated);border-radius:var(--radius-md);border:1px solid var(--color-border);text-align:center;">
+              <div style="font-size:0.7rem;text-transform:uppercase;letter-spacing:0.05em;color:var(--color-text-muted);margin-bottom:4px;">⏰ Repository Age</div>
+              <div style="font-size:1.2rem;font-weight:700;color:var(--color-text-primary);">${ageLabel}</div>
+            </div>
+            <div style="flex:1;min-width:140px;padding:12px;background:var(--color-bg-elevated);border-radius:var(--radius-md);border:1px solid var(--color-border);text-align:center;">
+              <div style="font-size:0.7rem;text-transform:uppercase;letter-spacing:0.05em;color:var(--color-text-muted);margin-bottom:4px;">📊 Yearly Commits</div>
+              <div style="font-size:1.2rem;font-weight:700;color:var(--color-text-primary);">${formatNumber(data.metrics?.yearly_commits || 0)}</div>
+            </div>
+            <div style="flex:1;min-width:140px;padding:12px;background:var(--color-bg-elevated);border-radius:var(--radius-md);border:1px solid var(--color-border);text-align:center;">
+              <div style="font-size:0.7rem;text-transform:uppercase;letter-spacing:0.05em;color:var(--color-text-muted);margin-bottom:4px;">🌐 Languages</div>
+              <div style="font-size:1.2rem;font-weight:700;color:var(--color-text-primary);">${data.metrics?.language_count || 0}</div>
+            </div>
+            <div style="flex:1;min-width:140px;padding:12px;background:var(--color-bg-elevated);border-radius:var(--radius-md);border:1px solid var(--color-border);text-align:center;">
+              <div style="font-size:0.7rem;text-transform:uppercase;letter-spacing:0.05em;color:var(--color-text-muted);margin-bottom:4px;">👥 Contributors</div>
+              <div style="font-size:1.2rem;font-weight:700;color:var(--color-text-primary);">${data.metrics?.contributor_count || 0}+</div>
+            </div>
+          </div>
+
+          <!-- Insights List -->
+          <h3 style="font-size:0.85rem;font-weight:600;color:var(--color-text-primary);margin-bottom:8px;">Key Insights</h3>
+          <ul style="list-style:none;padding:0;margin:0;">
+            ${insightsHtml}
+          </ul>
+        </div>
+      `;
+    } catch (err) {
+      renderPanelError('summary', 'Could not generate summary. ' + (err.message || ''));
+    }
+  }
+
+  // ── Export Functionality ─────────────────────────────────────────────────
+
+  function enableExportButtons() {
+    const jsonBtn = document.getElementById('export-json-btn');
+    const mdBtn = document.getElementById('export-md-btn');
+
+    if (jsonBtn) {
+      jsonBtn.disabled = false;
+      jsonBtn.addEventListener('click', exportJSON);
+    }
+    if (mdBtn) {
+      mdBtn.disabled = false;
+      mdBtn.addEventListener('click', exportMarkdown);
+    }
+  }
+
+  async function exportJSON() {
+    const btn = document.getElementById('export-json-btn');
+    if (btn) { btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Generating…'; }
+
+    try {
+      const result = await apiFetchExport(owner, repo);
+      const blob = new Blob([JSON.stringify(result.data, null, 2)], { type: 'application/json' });
+      downloadBlob(blob, `gitstory-${owner}-${repo}-report.json`);
+    } catch (err) {
+      alert('Export failed: ' + (err.message || 'Unknown error'));
+    } finally {
+      if (btn) { btn.disabled = false; btn.innerHTML = '<span>📄</span> Download JSON Report'; }
+    }
+  }
+
+  async function exportMarkdown() {
+    const btn = document.getElementById('export-md-btn');
+    if (btn) { btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Generating…'; }
+
+    try {
+      const result = await apiFetchExport(owner, repo);
+      const d = result.data;
+      const r = d.repository || {};
+      const s = d.summary || {};
+
+      let md = `# GitStory Report: ${r.full_name || `${owner}/${repo}`}\n\n`;
+      md += `> Generated on ${new Date(d.generated_at).toLocaleString()}\n\n`;
+      md += `## Repository Overview\n\n`;
+      md += `| Metric | Value |\n|---|---|\n`;
+      md += `| Stars | ${formatNumber(r.stars)} |\n`;
+      md += `| Forks | ${formatNumber(r.forks)} |\n`;
+      md += `| Open Issues | ${formatNumber(r.open_issues)} |\n`;
+      md += `| Language | ${r.primary_language || 'N/A'} |\n`;
+      md += `| License | ${r.license || 'N/A'} |\n`;
+      md += `| Created | ${r.created_at || 'N/A'} |\n\n`;
+
+      if (r.description) md += `**Description:** ${r.description}\n\n`;
+
+      md += `## Health Score: ${s.health_score}/100 (${s.health_label})\n\n`;
+      md += `${s.summary || ''}\n\n`;
+
+      if (s.insights && s.insights.length > 0) {
+        md += `## Key Insights\n\n`;
+        s.insights.forEach(i => md += `- ${i}\n`);
+        md += `\n`;
+      }
+
+      if (d.languages?.percentages) {
+        md += `## Languages\n\n`;
+        md += `| Language | Percentage |\n|---|---|\n`;
+        Object.entries(d.languages.percentages).forEach(([lang, pct]) => {
+          md += `| ${lang} | ${pct}% |\n`;
+        });
+        md += `\n`;
+      }
+
+      if (d.contributors && d.contributors.length > 0) {
+        md += `## Top Contributors\n\n`;
+        md += `| Rank | Username | Contributions |\n|---|---|---|\n`;
+        d.contributors.slice(0, 10).forEach((c, i) => {
+          md += `| ${i + 1} | ${c.login} | ${c.contributions} |\n`;
+        });
+        md += `\n`;
+      }
+
+      if (d.recent_commits && d.recent_commits.length > 0) {
+        md += `## Recent Commits\n\n`;
+        d.recent_commits.slice(0, 10).forEach(c => {
+          md += `- **${c.sha}** ${c.message} — *${c.author_name}* (${c.date || 'N/A'})\n`;
+        });
+        md += `\n`;
+      }
+
+      if (d.frequently_changed_files && d.frequently_changed_files.length > 0) {
+        md += `## Frequently Changed Files\n\n`;
+        md += `| File | Changes |\n|---|---|\n`;
+        d.frequently_changed_files.forEach(f => {
+          md += `| ${f.filename} | ${f.changes} |\n`;
+        });
+        md += `\n`;
+      }
+
+      md += `---\n\n*Report generated by [GitStory](https://github.com/abhi-patil-10/Ai_Agents)*\n`;
+
+      const blob = new Blob([md], { type: 'text/markdown' });
+      downloadBlob(blob, `gitstory-${owner}-${repo}-report.md`);
+    } catch (err) {
+      alert('Export failed: ' + (err.message || 'Unknown error'));
+    } finally {
+      if (btn) { btn.disabled = false; btn.innerHTML = '<span>📝</span> Download Markdown Report'; }
+    }
+  }
+
+  function downloadBlob(blob, filename) {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
   }
 })();

@@ -291,3 +291,116 @@ def get_releases(owner: str, repo: str):
         return error_response(exc.message, 502)
 
     return success_response(data, f"Releases for '{owner}/{repo}' retrieved successfully.")
+
+
+@repositories_bp.get("/<owner>/<repo>/summary")
+def get_summary(owner: str, repo: str):
+    """
+    Generate a rule-based summary and insights for a GitHub repository.
+
+    Aggregates data from multiple GitHub API endpoints and produces
+    health scores, insights, and a narrative summary.
+    """
+    if not is_valid_owner(owner):
+        return error_response(f"'{owner}' is not a valid GitHub owner name.", 400)
+    if not is_valid_repo(repo):
+        return error_response(f"'{repo}' is not a valid GitHub repository name.", 400)
+
+    current_app.logger.info("Generating summary: %s/%s", owner, repo)
+
+    from app.services.ai_service import generate_rule_based_summary
+
+    try:
+        # Fetch all data needed for the summary
+        repo_data = github_service.get_repository(owner, repo)
+        languages = github_service.get_languages(owner, repo)
+        contributors = github_service.get_contributors(owner, repo)
+        commits = github_service.get_commits(owner, repo)
+        activity = github_service.get_commit_activity(owner, repo)
+
+        # Hot files can timeout on large repos — make it optional
+        try:
+            hot_files = github_service.get_frequently_changed_files(owner, repo)
+        except Exception:
+            hot_files = []
+
+        summary = generate_rule_based_summary(
+            repo=repo_data,
+            languages=languages,
+            contributors=contributors,
+            commits=commits,
+            activity=activity,
+            hot_files=hot_files,
+        )
+
+    except NotFoundError as exc:
+        return error_response(exc.message, 404)
+    except RateLimitError as exc:
+        return error_response(exc.message, 429)
+    except UpstreamTimeoutError as exc:
+        return error_response(exc.message, 504)
+    except GitHubServiceError as exc:
+        return error_response(exc.message, 502)
+
+    return success_response(summary, f"Summary for '{owner}/{repo}' generated successfully.")
+
+
+@repositories_bp.get("/<owner>/<repo>/export")
+def export_report(owner: str, repo: str):
+    """
+    Export a complete repository analysis report as JSON.
+    Contains all analytics data in a single downloadable response.
+    """
+    if not is_valid_owner(owner):
+        return error_response(f"'{owner}' is not a valid GitHub owner name.", 400)
+    if not is_valid_repo(repo):
+        return error_response(f"'{repo}' is not a valid GitHub repository name.", 400)
+
+    current_app.logger.info("Exporting report: %s/%s", owner, repo)
+
+    from app.services.ai_service import generate_rule_based_summary
+    from datetime import datetime, timezone
+
+    try:
+        repo_data = github_service.get_repository(owner, repo)
+        languages = github_service.get_languages(owner, repo)
+        contributors = github_service.get_contributors(owner, repo)
+        commits = github_service.get_commits(owner, repo)
+        activity = github_service.get_commit_activity(owner, repo)
+
+        try:
+            hot_files = github_service.get_frequently_changed_files(owner, repo)
+        except Exception:
+            hot_files = []
+
+        summary = generate_rule_based_summary(
+            repo=repo_data,
+            languages=languages,
+            contributors=contributors,
+            commits=commits,
+            activity=activity,
+            hot_files=hot_files,
+        )
+
+        report = {
+            "report_title": f"GitStory Report: {owner}/{repo}",
+            "generated_at": datetime.now(timezone.utc).isoformat(),
+            "repository": repo_data,
+            "languages": languages,
+            "contributors": contributors,
+            "recent_commits": commits,
+            "commit_activity": activity,
+            "frequently_changed_files": hot_files,
+            "summary": summary,
+        }
+
+    except NotFoundError as exc:
+        return error_response(exc.message, 404)
+    except RateLimitError as exc:
+        return error_response(exc.message, 429)
+    except UpstreamTimeoutError as exc:
+        return error_response(exc.message, 504)
+    except GitHubServiceError as exc:
+        return error_response(exc.message, 502)
+
+    return success_response(report, f"Report for '{owner}/{repo}' exported successfully.")

@@ -155,3 +155,23 @@ async function apiFetchHotFiles(owner, repo) {
 async function apiFetchReleases(owner, repo) {
   return apiFetch(`/repositories/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/releases`);
 }
+
+/**
+ * Fetch AI-generated (rule-based) summary for a repository.
+ * @param {string} owner
+ * @param {string} repo
+ * @returns {Promise<ApiResponse>}
+ */
+async function apiFetchSummary(owner, repo) {
+  return apiFetch(`/repositories/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/summary`);
+}
+
+/**
+ * Fetch a complete export report for a repository.
+ * @param {string} owner
+ * @param {string} repo
+ * @returns {Promise<ApiResponse>}
+ */
+async function apiFetchExport(owner, repo) {
+  return apiFetch(`/repositories/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/export`);
+}

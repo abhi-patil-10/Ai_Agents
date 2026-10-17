@@ -25,6 +25,9 @@ Paste a GitHub URL or type `owner/repo` — GitStory does the rest.
 | **Language Distribution** | Doughnut chart with stacked bar and legend showing byte-based percentages |
 | **Recent Commits** | Paginated commit list with author, SHA, date, and GitHub link |
 | **Frequently Changed Files** | Top 10 most-modified files from recent commits with GitHub links |
+| **Summary & Insights** | Rule-based health score gauge (0-100), status label, and key insights |
+| **Repository Time Machine** | Historical milestones, project age, yearly activity velocity, and team metrics |
+| **Downloadable Reports** | One-click export to full JSON report and formatted Markdown document |
 | **Error Handling** | Rate limit detection, 404 handling, network errors, panel-level failures |
 | **Responsive Design** | Desktop, tablet, and mobile layouts with dark navy/purple/cyan theme |
 
@@ -65,13 +68,14 @@ backend/
 │   ├── config.py       → Environment configuration
 │   ├── routes/
 │   │   ├── health.py       → GET /api/health
-│   │   └── repositories.py → All /api/repositories/* endpoints
+│   │   └── repositories.py → All /api/repositories/* endpoints (overview, commits, languages, etc.)
 │   ├── services/
-│   │   └── github_service.py → GitHub API client with error handling
+│   │   ├── github_service.py → GitHub REST client with concurrent file inspection
+│   │   └── ai_service.py     → Rule-based AI summary, insights & health scoring engine
 │   └── utils/
-│       ├── errors.py       → Custom exceptions and JSON helpers
+│       ├── errors.py       → Custom exceptions and JSON response envelopes
 │       └── validators.py   → URL parsing and input validation
-└── tests/              → pytest test suite (31 tests)
+└── tests/              → pytest test suite (61 tests, 100% pass rate)
 ```
 
 ## GitHub API Endpoints Used
@@ -152,7 +156,7 @@ cd backend
 python -m pytest tests/ -v
 ```
 
-Expected: **31 tests, all passing**.
+Expected: **61 tests, all passing**.
 
 ## Error Handling & API Limitations
 
