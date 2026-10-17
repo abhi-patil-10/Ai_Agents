@@ -1,10 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>GitStory — Visual GitHub Repository Explorer</title>
-  <meta name="description" content="GitStory transforms public GitHub repositories into interactive development analytics dashboards. Explore commit history, contributors, languages, and more." />
+  <meta name="description"
+    content="GitStory transforms public GitHub repositories into interactive development analytics dashboards. Explore commit history, contributors, languages, and more." />
 
   <!-- Favicon -->
   <link rel="icon" type="image/svg+xml" href="favicon.svg" />
@@ -30,8 +32,7 @@
       position: absolute;
       inset: 0;
       background:
-        radial-gradient(ellipse 60% 45% at 50% -5%, rgba(124,92,252,0.18) 0%, transparent 60%),
-        radial-gradient(ellipse 40% 30% at 70% 10%, rgba(34,211,238,0.10) 0%, transparent 50%);
+        radial-gradient(ellipse 70% 50% at 50% -10%, rgba(88, 166, 255, 0.12) 0%, transparent 70%);
       pointer-events: none;
     }
 
@@ -41,8 +42,8 @@
       position: absolute;
       inset: 0;
       background-image:
-        linear-gradient(rgba(124,92,252,0.04) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(124,92,252,0.04) 1px, transparent 1px);
+        linear-gradient(rgba(88, 166, 255, 0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(88, 166, 255, 0.04) 1px, transparent 1px);
       background-size: 48px 48px;
       pointer-events: none;
       mask-image: radial-gradient(ellipse 60% 60% at center, black 0%, transparent 70%);
@@ -62,7 +63,7 @@
       font-weight: var(--fw-medium);
       color: var(--color-accent);
       background: var(--color-accent-muted);
-      border: 1px solid rgba(124,92,252,0.25);
+      border: 1px solid rgba(88, 166, 255, 0.25);
       padding: 6px 14px;
       border-radius: var(--radius-full);
       margin-bottom: 28px;
@@ -82,10 +83,7 @@
     }
 
     .hero-title .accent {
-      background: linear-gradient(135deg, var(--color-accent), var(--color-cyan));
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
+      color: var(--color-accent);
     }
 
     .hero-description {
@@ -124,14 +122,18 @@
       transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
     }
 
-    .hero-input::placeholder { color: var(--color-text-muted); }
+    .hero-input::placeholder {
+      color: var(--color-text-muted);
+    }
 
     .hero-input:focus {
       border-color: var(--color-accent);
-      box-shadow: 0 0 0 3px var(--color-accent-muted), 0 0 20px rgba(124,92,252,0.12);
+      box-shadow: 0 0 0 3px var(--color-accent-muted), 0 0 20px rgba(124, 92, 252, 0.12);
     }
 
-    .hero-input.error { border-color: var(--color-danger); }
+    .hero-input.error {
+      border-color: var(--color-danger);
+    }
 
     .hero-btn {
       padding: 14px 28px;
@@ -154,12 +156,19 @@
     }
 
     .hero-btn:hover {
-      background: linear-gradient(135deg, var(--color-accent-hover), #67e8f9);
-      box-shadow: 0 0 28px rgba(124,92,252,0.35), 0 0 28px rgba(34,211,238,0.2);
+      background: linear-gradient(135deg, #79c0ff, #58a6ff);
+      box-shadow: 0 0 28px rgba(88, 166, 255, 0.35);
     }
 
-    .hero-btn:active  { transform: translateY(1px); }
-    .hero-btn:disabled { opacity: 0.55; cursor: not-allowed; transform: none; }
+    .hero-btn:active {
+      transform: translateY(1px);
+    }
+
+    .hero-btn:disabled {
+      opacity: 0.55;
+      cursor: not-allowed;
+      transform: none;
+    }
 
     .hero-btn:focus-visible {
       outline: 2px solid var(--color-accent);
@@ -243,13 +252,9 @@
     }
 
     .feature-card:hover {
-      border-color: rgba(124,92,252,0.35);
-      box-shadow: 0 0 24px rgba(124,92,252,0.12), 0 4px 16px rgba(0,0,0,0.3);
-      transform: translateY(-3px);
-    }
-
-    .feature-card:hover::before {
-      opacity: 1;
+      border-color: var(--color-accent);
+      box-shadow: 0 0 24px rgba(88, 166, 255, 0.12);
+      transform: translateY(-2px);
     }
 
     .feature-icon {
@@ -318,7 +323,7 @@
     .hero-orb-1 {
       width: 320px;
       height: 320px;
-      background: rgba(124,92,252,0.12);
+      background: rgba(124, 92, 252, 0.12);
       top: -60px;
       left: 15%;
       animation: float-orb 8s ease-in-out infinite;
@@ -327,15 +332,22 @@
     .hero-orb-2 {
       width: 240px;
       height: 240px;
-      background: rgba(34,211,238,0.08);
+      background: rgba(34, 211, 238, 0.08);
       bottom: -40px;
       right: 10%;
       animation: float-orb 10s ease-in-out infinite reverse;
     }
 
     @keyframes float-orb {
-      0%, 100% { transform: translateY(0); }
-      50% { transform: translateY(-20px); }
+
+      0%,
+      100% {
+        transform: translateY(0);
+      }
+
+      50% {
+        transform: translateY(-20px);
+      }
     }
   </style>
 </head>
@@ -355,15 +367,10 @@
         <li><a href="https://github.com" target="_blank" rel="noopener noreferrer">GitHub ↗</a></li>
       </ul>
 
-      <button
-        class="navbar-toggle"
-        id="nav-toggle"
-        aria-label="Toggle navigation menu"
-        aria-expanded="false"
-        aria-controls="nav-links"
-      >
+      <button class="navbar-toggle" id="nav-toggle" aria-label="Toggle navigation menu" aria-expanded="false"
+        aria-controls="nav-links">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <line x1="3" y1="6"  x2="21" y2="6"  />
+          <line x1="3" y1="6" x2="21" y2="6" />
           <line x1="3" y1="12" x2="21" y2="12" />
           <line x1="3" y1="18" x2="21" y2="18" />
         </svg>
@@ -398,16 +405,8 @@
           <form id="explore-form" novalidate aria-label="Explore a repository">
             <div class="hero-input-row">
               <label for="repo-url-input" class="sr-only">GitHub repository URL</label>
-              <input
-                type="url"
-                id="repo-url-input"
-                class="hero-input"
-                placeholder="facebook/react or https://github.com/owner/repo"
-                autocomplete="off"
-                spellcheck="false"
-                aria-required="true"
-                aria-describedby="input-hint input-error"
-              />
+              <input type="url" id="repo-url-input" class="hero-input" placeholder="https://github.com/owner/repository"
+                autocomplete="off" spellcheck="false" aria-required="true" aria-describedby="input-hint input-error" />
               <button type="submit" id="explore-btn" class="hero-btn">
                 <span aria-hidden="true">🔍</span>
                 Explore Repository
@@ -428,12 +427,17 @@
       <div class="container">
         <p class="section-label">Try these</p>
         <div class="examples-row" id="examples-row">
-          <button class="example-chip" data-url="https://github.com/torvalds/linux"       type="button">torvalds/linux</button>
-          <button class="example-chip" data-url="https://github.com/facebook/react"       type="button">facebook/react</button>
-          <button class="example-chip" data-url="https://github.com/microsoft/vscode"     type="button">microsoft/vscode</button>
-          <button class="example-chip" data-url="https://github.com/python/cpython"       type="button">python/cpython</button>
-          <button class="example-chip" data-url="https://github.com/vercel/next.js"       type="button">vercel/next.js</button>
-          <button class="example-chip" data-url="https://github.com/django/django"        type="button">django/django</button>
+          <button class="example-chip" data-url="https://github.com/torvalds/linux"
+            type="button">torvalds/linux</button>
+          <button class="example-chip" data-url="https://github.com/facebook/react"
+            type="button">facebook/react</button>
+          <button class="example-chip" data-url="https://github.com/microsoft/vscode"
+            type="button">microsoft/vscode</button>
+          <button class="example-chip" data-url="https://github.com/python/cpython"
+            type="button">python/cpython</button>
+          <button class="example-chip" data-url="https://github.com/vercel/next.js"
+            type="button">vercel/next.js</button>
+          <button class="example-chip" data-url="https://github.com/django/django" type="button">django/django</button>
         </div>
       </div>
     </section>
@@ -451,19 +455,22 @@
           <article class="feature-card">
             <span class="feature-icon" aria-hidden="true">📊</span>
             <h3 class="feature-title">Repository Overview</h3>
-            <p class="feature-desc">Stars, forks, open issues, license, primary language, and default branch — all at a glance.</p>
+            <p class="feature-desc">Stars, forks, open issues, license, primary language, and default branch — all at a
+              glance.</p>
           </article>
 
           <article class="feature-card">
             <span class="feature-icon" aria-hidden="true">📅</span>
             <h3 class="feature-title">Commit Activity</h3>
-            <p class="feature-desc">Visualise weekly commit frequency over the past year to spot active periods and slowdowns.</p>
+            <p class="feature-desc">Visualise weekly commit frequency over the past year to spot active periods and
+              slowdowns.</p>
           </article>
 
           <article class="feature-card">
             <span class="feature-icon" aria-hidden="true">👥</span>
             <h3 class="feature-title">Contributors</h3>
-            <p class="feature-desc">See who drives the project — ranked by total contributions with drill-down profiles.</p>
+            <p class="feature-desc">See who drives the project — ranked by total contributions with drill-down profiles.
+            </p>
           </article>
 
           <article class="feature-card">
@@ -475,7 +482,8 @@
           <article class="feature-card">
             <span class="feature-icon" aria-hidden="true">🔥</span>
             <h3 class="feature-title">Frequently Changed Files</h3>
-            <p class="feature-desc">Identify the hotspots in a codebase — files that are touched most often in recent history.</p>
+            <p class="feature-desc">Identify the hotspots in a codebase — files that are touched most often in recent
+              history.</p>
           </article>
 
           <article class="feature-card">
@@ -519,4 +527,5 @@
     });
   </script>
 </body>
+
 </html>
