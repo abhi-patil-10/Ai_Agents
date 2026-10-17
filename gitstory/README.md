@@ -75,7 +75,7 @@ backend/
 │   └── utils/
 │       ├── errors.py       → Custom exceptions and JSON response envelopes
 │       └── validators.py   → URL parsing and input validation
-└── tests/              → pytest test suite (61 tests, 100% pass rate)
+└── tests/              → pytest test suite (65 tests, 100% pass rate)
 ```
 
 ## GitHub API Endpoints Used
@@ -88,6 +88,7 @@ backend/
 | `GET /repos/{owner}/{repo}/contributors` | Top contributors |
 | `GET /repos/{owner}/{repo}/commits` | Recent commits (paginated) |
 | `GET /repos/{owner}/{repo}/commits/{sha}` | Commit file details (for hot files) |
+| `GET /repos/{owner}/{repo}/releases` | Latest published repository releases |
 
 ### API Rate Limits
 
@@ -156,7 +157,7 @@ cd backend
 python -m pytest tests/ -v
 ```
 
-Expected: **61 tests, all passing**.
+Expected: **65 tests, all passing**.
 
 ## Error Handling & API Limitations
 
